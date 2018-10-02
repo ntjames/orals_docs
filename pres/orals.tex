@@ -1,0 +1,95 @@
+\documentclass{beamer}
+\usepackage{amsfonts, amssymb, amsmath, amsthm, graphicx, multirow, beamerthemesplit}
+
+\title[Copula Modeling for Clinical Trials]{Copula Modeling for Clinical Trials}
+\author{Nathan T. James, ScM}
+\institute{Dept. of Biostatistics, Vanderbilt University}
+\date{December 14, 2018}
+
+\begin{document}
+	
+	\frame{\titlepage}	
+%	\frame{\tableofcontents}
+	
+\section{Introduction}
+
+	\begin{frame}
+		\frametitle{Introduction}
+		\begin{itemize}
+			\item Ordinal Cumulative Probability Model (CPM)
+	           \begin{itemize}
+		           	\item $G[P(Y \le y_i|X)]=\alpha_i-\beta^{T}X$ 
+	           		\item $y_i$ - ordered, continuous outcome
+	           		\item $X$ - matrix of covariates
+	           		\item $G(\cdot)$ - link function 
+	           \end{itemize}
+	     \end{itemize}
+	     Why use a Bayesian CPM with a \textbf{continuous} outcome?
+	     \begin{itemize}
+	        \item Invariant to monotonic transformation of outcome 
+	        \item Directly model full conditional CDF 
+           	\item Handles any ordered outcome including mixed discrete/continuous distributions (e.g., continuous outcome with lower limit of detection) 
+           	\item Inference using posterior probabilities   	
+		\end{itemize}
+	\end{frame}
+	
+\section{Model Interpretation}
+	
+	\begin{frame}
+		\begin{itemize}
+		\item $\alpha_i$  estimate posterior CDF for $X=0$
+		\item $\beta$ measure association between $X$ and distribution of $Y$; interpretation depends on link function 
+        \item Mean and quantiles calculated from posterior distribution of full conditional CDF using single model
+		\end{itemize}
+		\begin{center}
+			\includegraphics[scale=0.53]{fig/placeholder}
+		\end{center}
+	\end{frame}
+	
+\section{Model Performance}
+
+	\begin{frame}
+		\begin{itemize}
+	%	\item software comparison
+		\item Implemented using \texttt{brms} and \texttt{rstanarm}; both call \texttt{Rstan}
+		\item Different parameterizations; using default priors \texttt{rstanarm} more accurate in simulations 
+		\item Model convergence depends on package and link function
+	%	\item Ex. logistic model, logit data, n=100
+		\end{itemize}
+		\begin{center}
+		%	\includegraphics[scale=.55]{../fig/mod_comp1}		
+		\end{center}
+	\end{frame}
+
+	\begin{frame}
+		% Computational Efficiency
+		\begin{itemize}
+			\item \texttt{brms} needs to compile C++ code, \texttt{rstanarm} pre-compiled
+			\item Major differences in computation time based on link function
+			\item For datasets up to $\sim 1000$ distinct $y$ values
+			computation time is approximately linear for both packages; for larger datasets compute time increases at a faster rate for \texttt{brms}
+		\end{itemize}
+		\begin{center}
+		%	\includegraphics[scale=.51]{../fig/comptime_accre}
+		\end{center}
+		\end{frame}
+
+		\begin{frame}
+		\begin{itemize}
+		%	\item Model Misspecification
+			\item With moderate sample size, reasonably robust to misspecification of link function
+			\item Uncertainty in link function can be accounted for using a mixture of links
+		\end{itemize}			
+		\begin{center}
+		%	\includegraphics[scale=.43]{../fig/misspec_plot1}
+		\end{center}
+		\end{frame}
+	
+	\begin{frame}
+	Contact\\
+	email: nathan.t.james AT vanderbilt.edu\\
+	web: ntjames.com\\
+	twitter: @nalhsyjones
+	\end{frame}
+
+\end{document} 
