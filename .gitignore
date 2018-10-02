@@ -219,6 +219,9 @@ TSWLatexianTemp*
 *.bak
 *.sav
 
+# Texstudio
+*.txss
+
 # Texpad
 .texpadtmp
 
