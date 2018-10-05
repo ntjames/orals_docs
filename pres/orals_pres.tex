@@ -1,10 +1,10 @@
 \documentclass{beamer}
 \usepackage{amsfonts, amssymb, amsmath, amsthm, graphicx, multirow, beamerthemesplit}
 
-\title[Copula Modeling for Clinical Trials]{Copula Modeling for Clinical Trials}
+\title[Bayesian Copula Modeling for Clinical Trials]{Bayesian Copula Modeling for Clinical Trials}
 \author{Nathan T. James, ScM}
 \institute{Dept. of Biostatistics, Vanderbilt University}
-\date{December 14, 2018}
+\date{Decmber 17, 2018}
 
 \begin{document}
 	
@@ -14,82 +14,185 @@
 \section{Introduction}
 
 	\begin{frame}
-		\frametitle{Introduction}
+		\frametitle{Clinical Trials}
 		\begin{itemize}
-			\item Ordinal Cumulative Probability Model (CPM)
-	           \begin{itemize}
-		           	\item $G[P(Y \le y_i|X)]=\alpha_i-\beta^{T}X$ 
-	           		\item $y_i$ - ordered, continuous outcome
-	           		\item $X$ - matrix of covariates
-	           		\item $G(\cdot)$ - link function 
-	           \end{itemize}
+			\setlength\itemsep{2em}
+			\item Clinical trials are controlled, randomized experiments of a medical intervention in human subjects
+         	\item Traditionally divided into 4 sequential phases
+				\begin{itemize}
+					\setlength{\itemindent}{.5in}
+					\item[Phase I] first-in-human, dose-finding
+					\item[Phase II]  determine efficacy
+					\item[Phase III]  confirm efficacy, assess safety
+					\item[Phase IV] long-term surveillance
+				\end{itemize}
 	     \end{itemize}
-	     Why use a Bayesian CPM with a \textbf{continuous} outcome?
-	     \begin{itemize}
-	        \item Invariant to monotonic transformation of outcome 
-	        \item Directly model full conditional CDF 
-           	\item Handles any ordered outcome including mixed discrete/continuous distributions (e.g., continuous outcome with lower limit of detection) 
-           	\item Inference using posterior probabilities   	
-		\end{itemize}
 	\end{frame}
-	
-\section{Model Interpretation}
 	
 	\begin{frame}
+		\frametitle{Clinical Trials}
 		\begin{itemize}
-		\item $\alpha_i$  estimate posterior CDF for $X=0$
-		\item $\beta$ measure association between $X$ and distribution of $Y$; interpretation depends on link function 
-        \item Mean and quantiles calculated from posterior distribution of full conditional CDF using single model
+			\setlength\itemsep{2em}
+			\item To gain regulatory approval, the benefits (efficacy) of an intervention must outweigh the risks (safety) 
+			\item Usually efficacy and safety outcomes are not modelled jointly
+			\item Modelling outcomes together
+			\begin{itemize}
+				\item Uses data more effectively 
+				\item Provides better characterization of risk-benefit tradeoff
+			\end{itemize}
 		\end{itemize}
-		\begin{center}
-			\includegraphics[scale=0.53]{fig/placeholder}
-		\end{center}
+	\end{frame}
+					
+	\begin{frame}
+		\frametitle{Copulas}
+		\begin{itemize}
+			\setlength\itemsep{2em}
+			\item Each outcome can be modelled by a univariate distribution function
+			\item A \emph{copula}, $C()$, is a mathematical function that combines univariate distributions to create a multivariate distribution
+			\item \emph{Sklar's Theorem}\footnote{Sklar, A. (1959), ``Fonctions de  r\'epartition \`a n dimensions et leurs marges", Publ. Inst. Statist. Univ. Paris, 8: 229–231} guarantees that we can construct a proper multivariate distribution function from any univariate distributions with a given $C()$ function
+		\end{itemize}
 	\end{frame}
 	
-\section{Model Performance}
+	\begin{frame}
+		\frametitle{Copulas}
+		Ex. Combine $Normal(0,1)$ and $Gamma(2,1)$ distributions using a Gumbel copula $C_{\theta}(u,v)=\exp[-( (-\log u)^\theta + (-\log v)^\theta )^{1/\theta}]$	
+		\begin{center}
+			\includegraphics[scale=0.31]{fig/normal}
+			\quad
+			\includegraphics[scale=0.31]{fig/gamma}\\
+			$\Downarrow$
+		\end{center}
+		\begin{center}	
+			\includegraphics[scale=0.2]{fig/gumbel_cop}
+		\end{center}
+	\end{frame}
+		
+	\begin{frame}
+		\frametitle{Copulas}
+		\begin{itemize}
+		\setlength\itemsep{2em}
+		\item We can study the resulting multivariate distribution function to determine how efficacy and safety are correlated
+		\item In practice, the form of the univariate distributions and the type of copula are unknown and must be estimated from the observed data
+		\end{itemize}
+	\end{frame}
+		
+	\begin{frame}
+		\frametitle{Bayesian Inference}
+		\begin{itemize}
+			\setlength\itemsep{2em}
+			\item Principled method of combining prior beliefs with newly collected data 
+			\item Provides a mechanism to incorporate information from animal models, previous studies, clinical expertise, etc.
+			\item Simpler conceptual framework for adaptive designs
+			\item Inference is based on posterior probabilities
+		\end{itemize}
+	\end{frame}	
+
+	
+\section{Example}
+	
+	\begin{frame}
+		\frametitle{EffTox design}
+		Efficacy-Toxicity (EffTox)\footnote{Thall, P. and Cook, J. (2004), ``Dose-finding based on efficacy-toxicity trade-offs", Biometrics, 60:684-693.} is a study design which combines elements of Phase I and II trials
+		\begin{itemize}
+			\setlength\itemsep{1.5em}
+		\item A Bayesian copula model for the probabilities of Efficacy and Toxicity as a function of dose
+		\item Criteria for dose acceptability
+        \item Trade-off contours quantifying the desirability of each dose
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Bayesian Copula model} 
+		\begin{itemize}
+			\setlength\itemsep{2em}
+			\item Consider a binary bivariate outcome $Y=(Y_E,Y_T)$ where $Y_k \in \{0,1\},\,k=E,T$ 
+			\item The marginal probability at dose $x_j$ for outcome $k$ is modelled as
+			$\pi_{k,j}=\text{logit}^{-1}(\eta_{k,j})$ where $\eta_{k,j}$ is a linear function of dose
+			\item The joint probability of both outcomes given dose and $\eta_{k,j}$ parameters $\theta$ is $Pr(Y_E=a,Y_T=b|x_j,\theta)=\pi(a,b|x_j,\theta)$ for $(a,b)=(1,1),(1,0),(0,1),(0,0)$
+
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Bayesian Copula model} 
+		\begin{itemize}
+			\setlength\itemsep{2em}
+			\item The joint probability, $\pi(a,b|x_j,\theta)$, is modelled with a Farlie-Gumbel-Morgenstern (FGM) copula
+			\item For subject $i$, let $(Y_{i,E},Y_{i,T})$ be the observed outcome and $x_{[i]}$ the assigned dose, the likelihood of the data $\mathcal{D}_n$ for all $n$ subjects is
+			$\mathcal{L}(\mathcal{D}_n|\theta)=\prod_{i=1}^{n}\pi(Y_{i,E},Y_{i,T}|x_{[i]},\theta)$
+			\item Finally, the posterior is $p(\theta|\mathcal{D}_n) \propto \mathcal{L}(\mathcal{D}_n|\theta) \times p(\theta)$
+		\end{itemize}
+	\end{frame}	
+	
+	\begin{frame}
+		\frametitle{Dose Acceptability} 
+		\begin{itemize}
+			\setlength\itemsep{2em}
+			\item Using information elicited from physicians, bounds are established to prevent assigning a dose which is likely to be ineffective or too toxic
+			\item The trial is stopped if no dose is acceptable based on estimates from the Bayesian model 
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Trade-off contours} 
+		\begin{columns}[T]
+			\begin{column}{.5\textwidth}			
+				\begin{itemize}
+					\setlength\itemsep{1em}
+					\item Trade-off contours represent equally desirable pairs of efficacy/toxicity probabilities (Prob(efficacy),Prob(toxicity))
+					\item (0.5,0), (0.7,0.25), (1,0.6) equally desirable
+					\item Dose desirability calculated from model estimates and used to assign dose in next cohort
+				\end{itemize}
+			\end{column}
+			\begin{column}{.5\textwidth}
+				\includegraphics[height=5.8cm]{fig/image046}
+			\end{column}
+		\end{columns}		
+	\end{frame}	
+
+	\begin{frame}
+		\frametitle{Simulations}
+	\end{frame}	
+	
+	\begin{frame}
+		\frametitle{Comparison to classical designs} 
+	\end{frame}	
+	
+\section{Research Topics}
 
 	\begin{frame}
 		\begin{itemize}
-	%	\item software comparison
-		\item Implemented using \texttt{brms} and \texttt{rstanarm}; both call \texttt{Rstan}
-		\item Different parameterizations; using default priors \texttt{rstanarm} more accurate in simulations 
-		\item Model convergence depends on package and link function
-	%	\item Ex. logistic model, logit data, n=100
+			\setlength\itemsep{2em}
+			\item How to elicit and incorporate non-standard prior distributions
+			\item More flexible modelling of copula (copula conditional regression, nonparametric estimation)
+			\item Implementation of more efficient, flexible, and easy to use software 
 		\end{itemize}
 		\begin{center}
 		%	\includegraphics[scale=.55]{../fig/mod_comp1}		
 		\end{center}
 	\end{frame}
 
-	\begin{frame}
-		% Computational Efficiency
-		\begin{itemize}
-			\item \texttt{brms} needs to compile C++ code, \texttt{rstanarm} pre-compiled
-			\item Major differences in computation time based on link function
-			\item For datasets up to $\sim 1000$ distinct $y$ values
-			computation time is approximately linear for both packages; for larger datasets compute time increases at a faster rate for \texttt{brms}
-		\end{itemize}
-		\begin{center}
-		%	\includegraphics[scale=.51]{../fig/comptime_accre}
-		\end{center}
-		\end{frame}
+\section{Conclusion}
 
-		\begin{frame}
+	\begin{frame}
 		\begin{itemize}
-		%	\item Model Misspecification
-			\item With moderate sample size, reasonably robust to misspecification of link function
-			\item Uncertainty in link function can be accounted for using a mixture of links
+			\setlength\itemsep{2em}
+			\item Copula models
+			\begin{itemize} 
+				\item Use data more effectively
+				\item Formally quantify risk-benefit tradeoff
+			\end{itemize}
+			\item Bayesian paradigm
+			\begin{itemize}
+			 \item Easier to interpret inference
+			 \item More flexible designs
+			 \end{itemize}
+%			\item Improving study design reduces drug development time and makes trials more ethical and less costly
 		\end{itemize}			
 		\begin{center}
 		%	\includegraphics[scale=.43]{../fig/misspec_plot1}
 		\end{center}
-		\end{frame}
-	
-	\begin{frame}
-	Contact\\
-	email: nathan.t.james AT vanderbilt.edu\\
-	web: ntjames.com\\
-	twitter: @nalhsyjones
 	\end{frame}
+	
 
 \end{document} 
