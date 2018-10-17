@@ -60,6 +60,8 @@ Plotting the values of the semivariogram against the distances for all pairs of 
 Where $\mathbf{h}$ indexes each class ($\mathbf{h}$ is often the midpoint of each class range), $N(\mathbf{h})$ is the set of all points within the class,  $|N(\mathbf{h})|$ is the number of points within the class. By collecting the points within classes and then taking the average within each class we produce the empirical semivariogram estimator.
 
 The empirical semivariogram is useful to explore the spatial dependence in the data, however in order to estimate values with the ordinary kriging equation, we must have a model for the `true' variogram.  Several families of variogram model have been validated and are considered (@smith_bayesian_nodate, @biswas_bayesian_2009).  To fit the model we rely on least squares methods which fit the model to the empirical semivariogram.
+
+Equation \@ref(eq:some-eq) 
  
 We begin the kriging process by importing the geocoded NIfETy data into R.  We use the R package ``copula" @hofert_copula:_2016. A map of NIfETy sample locations and incivility values was produced to visually examine spatial dependence. Next the variogram cloud, classical empirical semivariogram estimator, and robust semivariogram estimator were plotted and compared.  Anisotropy was explored using directional semivariograms and an empirical semivariogram contour map.
 

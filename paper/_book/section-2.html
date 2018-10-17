@@ -708,6 +708,7 @@ Plotting the values of the semivariogram against the distances for all pairs of 
 \end{gather*}\]</span>
 <p>Where <span class="math inline">\(\mathbf{h}\)</span> indexes each class (<span class="math inline">\(\mathbf{h}\)</span> is often the midpoint of each class range), <span class="math inline">\(N(\mathbf{h})\)</span> is the set of all points within the class, <span class="math inline">\(|N(\mathbf{h})|\)</span> is the number of points within the class. By collecting the points within classes and then taking the average within each class we produce the empirical semivariogram estimator.</p>
 <p>The empirical semivariogram is useful to explore the spatial dependence in the data, however in order to estimate values with the ordinary kriging equation, we must have a model for the `true’ variogram. Several families of variogram model have been validated and are considered (<span class="citation">Smith (n.d.)</span>, <span class="citation">Biswas et al. (<a href="#ref-biswas_bayesian_2009">2009</a>)</span>). To fit the model we rely on least squares methods which fit the model to the empirical semivariogram.</p>
+<p>Equation <a href="index.html#eq:some-eq">(1)</a></p>
 <p>We begin the kriging process by importing the geocoded NIfETy data into R. We use the R package ``copula&quot; <span class="citation">Hofert et al. (<a href="#ref-hofert_copula:_2016">2016</a>)</span>. A map of NIfETy sample locations and incivility values was produced to visually examine spatial dependence. Next the variogram cloud, classical empirical semivariogram estimator, and robust semivariogram estimator were plotted and compared. Anisotropy was explored using directional semivariograms and an empirical semivariogram contour map.</p>
 
 </div>
@@ -769,7 +770,7 @@ gitbook.start({
 "link": null,
 "text": null
 },
-"download": ["_main.pdf"],
+"download": null,
 "toc": {
 "collapse": "section"
 }
