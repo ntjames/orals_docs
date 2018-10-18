@@ -1,0 +1,70 @@
+
+# Joint Copula Models
+
+
+## Copula families
+
+
+Much more background on copulas
+
+Elliptical
+
+Archimedean
+
+Combinations/Comprehensive
+
+Here is some additional text and we can also reference a table (see table \ref{Ta:a_table}).  The incivility was the sum of features present within a block -@costa_case_2017.
+
+\begin{table}
+\begin{center}
+\caption{Popular Copulas}
+\begin{tabular}{cc}
+  \hline \\
+Independence & Normal \\
+t-Copula &other elliptical?? \\
+Archimedean  &Clayton\\
+\multicolumn{2}{c}{Comprehensive}\\ \\
+  \hline
+\end{tabular}
+\label{Ta:a_table}
+\end{center}
+\end{table}
+
+
+
+
+
+## Copula regression
+
+This is a whole section on copula regression
+
+\begin{gather}
+E(Z(s))=\mu(s)=\mu,\text{for all }s \in D (\#eq:eq2-1)\\
+Var(Z(s))=\sigma^{2}(s)=\sigma^{2},\text{for all }s \in D (\#eq:eq2-2)\\
+Cov(Z(s_{1}),Z(s_{2}))=C(s_{i}-s_{j}),\text{for all }s_{i}\ne s_{j} \in D (\#eq:eq2-3)
+\end{gather}
+Equations \@ref(eq:eq2-1) and \@ref(eq:eq2-2) ensure that the mean and variance are constant and independent of location throughout the region $D$. Equation \@ref(eq:eq2-3) ensures that the covariance depends only on the difference between two locations, rather than the locations themselves. $C(\cdot)$ in equation \@ref(eq:eq2-3) is called the covariance function.
+
+Another possible assumption related to the variability between points is
+\begin{equation}
+  Var(Z(s_{1})-Z(s_{2}))=2\gamma(s_{i}-s_{j}),\text{for all }s_{i}\ne s_{j} \in D (\#eq:eq2-4)
+\end{equation}
+$2\gamma(\cdot)$ is called the variogram function and $\gamma(\cdot)$ is the semivariogram.
+
+A more general form of stationarity called intrinsic stationary is equivalent to accepting the assumptions in equations \@ref(eq:eq2-1),\@ref(eq:eq2-2) and \@ref(eq:eq2-4). The form of stationarity chosen for model will determine which of equation \@ref(eq:eq2-3) or \@ref(eq:eq2-4) is used to model spatial dependence between points.  Since the intrinsic stationarity assumption is more general and because the variogram and semivariogram have been shown to be more robust than the covariogram (citation) we will work with the semivariogram.
+
+A non-numbered equation
+
+\begin{gather*}
+\hat{\gamma}(\mathbf{h})=\frac{1}{2|N(\mathbf{h})|}\sum_{N(\mathbf{h})}(Z(s_{i})-Z(s_{j}))^{2}
+\end{gather*}
+
+
+Equation \@ref(eq:bayes1)
+
+[@smith_bayesian_nodate; @biswas_bayesian_2009].  
+ 
+ We use the R package ``copula" @hofert_copula:_2016. 
+ 
+ This is the second time citing @joe_dependence_2015
+ 

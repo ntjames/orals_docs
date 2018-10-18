@@ -1,5 +1,5 @@
 ---
-title: "Copula Modeling for Clinical trials"
+title: "Copula Modeling for Clinical Trials"
 author: "Nathan T. James"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -11,19 +11,33 @@ output:
       in_header: header.html
     config:
       toc:
+        before: <li> &nbsp; Copula Modeling for Clinical Trials </li>
         collapse: section
-      sharing:
-        github: yes
-        facebook: no
-documentclass: book
+      download: null
+      sharing: no    
+  bookdown::pdf_book:
+    toc: yes
+    number_sections: FALSE
+    includes:
+      in_header: preamble.tex
+    keep_tex: no
+subparagraph: true
+documentclass: report
 bibliography: ["zotero_library.bib"]
 biblio-style: apalike
 link-citations: yes
+csl: biosensors.csl
 ---
 
 ```{r setup0, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#For code block want echo=TRUE if (knitr::is_html_output())
+# echo=FALSE otherwise (e.g. echo = FALSE if (knitr::is_latex_output()))
+knitr::opts_chunk$set(echo = knitr::is_html_output())
 wd<-getwd()
+
+# load packages
+libs<-c("copula","scatterplot3d")
+invisible(lapply(libs, library, character.only = TRUE))
 ```
 
 ```{r htmlTemp3, echo=FALSE, eval=TRUE}

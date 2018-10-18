@@ -1,28 +1,83 @@
 
 
-## Subsection
+## Background
 
-A significant body of research exploring the relationship between the environment and physical activity has developed in diverse fields such as urban planning, economics, criminology, transportation, psychology, exercise science, and public health.  Research ranges from macro-scale studies of transportation mode choices across cities and regions to small scale investigations of specific types of walking behavior among small subpopulations.  In public health, efforts have been made to determine correlates of purposeful physical activity such as walking or bicycling to school or work and the environment, since active transport is seen as a potential key to increasing physical activity and lowering rates of obesity and related chronic diseases.  
-This is especially true for youth, for whom rates of physical activity have continued to fall as obesity rises. Additional research has focused on the relationship between active transport and overall levels of physical activity.
+Clinical trials are considered the gold standard for evaluated of medical intervention [cite].
 
-## Another subsection
+Principles of beneficence, etc.. (check ICH guidelines) mean that all interventions must in principle be evaluated for both efficacy and safety and further these benefits must outweigh the risks [cite]. Traditionally the efficacy and safety effects are evaluated using a series of trials with four sequential phases. Phase I are first-in-human trials designs usually performed on a small number of healthy participants to determine dosing (and other PK/PD?). Phase II trials are often first to test intervention in patients with the disease of interest and are used to determine efficacy and make go/no-go decision about whether to continue drug development. Phase III trials confirm the efficacy found in early studies and gather more information about adverse events. These studies are usually the pivotal studies required by regulatory agencies to approve a drug for marketing. Finally, Phase IV studies are ongoing surveillance ... [cite]
+
+Usually the effect of treatment on efficacy and safety outcomes are explored with separate models for each type of outcome
+
+Further, many studies include several outcomes (endpoints) of interest represent the effects of the intervention on a multiple (pathologies/disease processes?) and interest may
+
+Same with multiple types of adverse event
+
+For all these situations, modeling outcomes jointly uses data more efficiently [CITE] and provides a better characterization of the intervention across multiple domains[word choice?] simultaneously
+
+(Can occur at multiple phases - phase I/II dosing toxicity/efficacy, phase III benefit-risk , phase IV? adverse risk assessment)
+
+Several strategies have been proposed for such joint models including blah, blah [cite]. In this report I will focus on use of copulas for joint  models @costa_bayesian_2018.
+
+## Copulas
+
+In the usual case, each outcome is modeled by a univariate function of treatment and and other covariates
+
+A copula is a mathematical function that combines univariate distributions to create a multivariate distribution. Importantly, Sklar's Theorem[cite] guarantees that a proper multivariate distribution function can be constructed by combining any univariate distribution functions (any?? check discrete) and a copula 
+
+this is an example of a citation @nelsen_introduction_2006.
+
+A distinct advantage of the copula approach is the ability to "couple" arbitrary univariate models, thereby allowing modeling of the marginal univariate outcomes to be separated from modeling of the copula, which contains information about the correlation (more general term) between the outcomes
+
+Further details on copulas and copula regression are presented below 
+
+this is another citation @joe_dependence_2015
+
+We can also include a figure made from R code such as the Gumbel copula in figure \@ref(fig:gumbel-cop).
+
+
+```{r gumbel-cop, fig.cap="Gumbel copula"}
+#curve(dnorm,-5,5,xaxt="n",yaxt="n",xlab="",ylab="")
+#curve(dgamma(x,2),0,6,xaxt="n",yaxt="n",xlab="",ylab="")
+
+exMvd <- mvdc(copula = archmCopula(family = "gumbel", param = 1.2),
+              margins = c("norm", "gamma"),
+              paramMargins = list(list(mean=0, sd = 1),
+                                  list(shape=2, rate = 1)))
+
+persp(exMvd, dMvdc, xlim=c(-4,4), ylim=c(-1,8), shade=0.3,
+      theta=50, phi=20, box=FALSE, r=1, xaxs = "i")
+```
+
 
 Bla bla bla this is an example of a citation @joe_dependence_2015
 
-We can also include a picture as seen in figure \@ref(fig:fig1). it's a placeholder for now
+We can also include an external picture as seen in figure \@ref(fig:fig1). it's a placeholder for now
 
 ```{r fig1, fig.cap="Some Figure"}
 knitr::include_graphics(file.path(wd,"fig","placeholder.jpg"))
 ```
 
 
-### Last Subsection
 
-Multiple Opportunities to Reach Excellence (MORE) is a longitudinal, epidemiological study designed to assess the relationship between youth and long term exposure violence. The study participants are children in 4th and 5th grades in six Baltimore City public schools. In-person interviews were conducted with participating children and their parents to collect data on demographics, child activity (including child and parent reported walking to school behavior), and perceptions of the surrounding neighborhood.
+## Inference
+
+Inference on the resulting multivariate distribution function can be used to determine how the outcomes are correlated and can be performed under several paradigms 
+
+-Frequentist
+
+-Bayesian
+
+Principled method of combining prior beliefs concerning parameters with additional data
 
 \begin{gather}
-  q_{j}=\frac{\sum_{i}b_{i}p_{i}}{\sum_{i}l_{i}p_{i}} (\#eq:some-eq)
+p(\theta|y)=\frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta)\,d\theta} (\#eq:bayes1)
 \end{gather}
 
-Data was collected from 365 children in August through October 2007 as part of cohort 1 of the MORE study, however only 362 of the study participants had addresses which were successfully geocoded @nelsen_introduction_2006.
+In context of clinical trials - include elicited clinical expertise, previous (historical) studies
+
+Inference based on posterior probabilities more interpretable
+
+Adaptive designs??
+
+-Likelihood??
 

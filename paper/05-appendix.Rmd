@@ -1,11 +1,12 @@
 
 # (APPENDIX) Appendix {-}
 
-# Appendix A
+# Something Technical
 
-Next, a streetmap was developed based on the 2007 TIGER/Line shapefiles. The TIGER shapefiles containing the location of streets, rail lines, and other passages in Baltimore city were merged with an accompanying relationship table containing information about street name, direction, zip code, and address ranges for each block face as well as indicator fields for type of linear feature (road, rail, other). Utilizing these indicator fields, the dataset was narrowed to include only road segments.
+This appendix has the technical details used to derive ...
 
-# Appendix B
+`r if (!knitr::is_html_output()) '# Code Appendix'` 
 
-something more
+```{r, ref.label='gumbel-cop', echo=!knitr::is_html_output(), eval=FALSE}
+```
 
