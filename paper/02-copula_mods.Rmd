@@ -1,70 +1,148 @@
 
 # Joint Copula Models
 
+Before giving more details about specific applications, we will review some of the fundamentals of copula theory.
 
-## Copula families
+## Definition
 
+[Definition, Sklar's Theorem, example]
 
-Much more background on copulas
+Sklar's theorem (from Joe)
 
-Elliptical
-
-Archimedean
-
-Combinations/Comprehensive
-
-Here is some additional text and we can also reference a table (see table \ref{Ta:a_table}).  The incivility was the sum of features present within a block -@costa_case_2017.
-
-\begin{table}
-\begin{center}
-\caption{Popular Copulas}
-\begin{tabular}{cc}
-  \hline \\
-Independence & Normal \\
-t-Copula &other elliptical?? \\
-Archimedean  &Clayton\\
-\multicolumn{2}{c}{Comprehensive}\\ \\
-  \hline
-\end{tabular}
-\label{Ta:a_table}
-\end{center}
-\end{table}
+For a d-variate distribution $F$ with $jth$ univariate margin $F_j$, the copula associated with $F$ is a distribution function $C: [0,1]^d \to [0,1]$ with $Uniform(0,1)$ margins that satisfies:
+\begin{gather}
+F(\mathbf{y})=C(F_1(y_1),\ldots,F_d(y_d)), \, \mathbf{y} \in \mathbb{R}^d (\#eq:eq2-1)
+\end{gather}
+(a) If $F$ is a continuous d-variate distribution with univariate margins $F_1,\ldots, F_d$, and quantile functions $F_1^{-1},\ldots, F_d^{-1}$, then
+\begin{gather}
+C(\mathbf{u})=F(F_1^{-1}(u_1),\ldots, F_d^{-1}(u_d))\, \mathbf{u} \in [0,1]^d (\#eq:eq2-2)
+\end{gather}
+Is the unique choice.  
 
 
+(a) If $F$ is a d-variate distribution of discrete random variables (or partly continuous and partly discrete), then the copula is unique only on the set
+\begin{gather}
+Range(F_1) \times \cdots \times Range(F_d) (\#eq:eq2-3)
+\end{gather}
+
+Equations \@ref(eq:eq2-1) and \@ref(eq:eq2-2) show the relationship between the marginal distributions $F_1$ through $F_d$ and the joint distibution $F$, linked by the copula $C$. The probability integral transform ensures that $F_1(y_1) = u_1 \sim Uniform(0,1)$. 
+Given continuous marginal distributions and a specified copula, the resulting multivariate distribution is unique. If the marginal distributions are discrete, the copula is only unique on the set defined in equation\@ref(eq:eq2-3).
+
+Note that this formulation does not specify what copula should be used. Substituting different copulas results in different multivariate distributions
+
+Example - Gaussian copula
 
 
+## Copula concepts
+
+[Important copula concepts and background]
+
+-conditions for MV cdfs/copulas?  
+
+-independence copula  
+
+-upper and lower bounds  
+
+-dependence measures  
+
+-tail probability/tail dependence/tail asymmetry  
+
+-Two major classes/families: Elliptical - multivariate Normal, multivariate t & Archimedean
+ see table \ref{tab:tab1}  
+ 
+-Combinations/Comprehensive: mixtures of copulas are also copulas 
+
+Generating copulas?
+
+<!-- for more info about tables
+https://haozhu233.github.io/kableExtra/
+https://haozhu233.github.io/kableExtra/awesome_table_in_pdf.pdf
+https://haozhu233.github.io/kableExtra/awesome_table_in_html.html
+https://haozhu233.github.io/kableExtra/bookdown/cross-format-tables-in-bookdown.html
+-->
+
+```{r, echo=FALSE}
+tab1<-matrix(c(c('Independence','Normal/Gaussian','t','Gumbel','Clayton'),
+                c('No','No','Yes','Yes, upper tail', 'Yes, lower tail')), 
+             byrow=FALSE, ncol=2)
+
+colnames(tab1)<-c("Name","Tail Dependence")
+```
+
+```{r tab1, echo=FALSE, results='asis'}
+knitr::kable(tab1, booktabs = TRUE, caption = 'Popular Copulas')
+```
+
+We use the R package ``copula" @hofert_copula:_2016 for basic copula functions. 
 
 ## Copula regression
 
-This is a whole section on copula regression
+[Extension to regression]
+
+In order to use copulas in a clinical trial setting, the basic theory must be extended to include covariates indicating the groups being compared (dose levels, treatment vs. control, etc.) and possibly adjust for other factors.
+
+This is done by replacing each marginal distribution with a conditional distribution tied to a regression model $F_1(Y_1) \Rightarrow F_1(Y_1|X_1)$ @kolev_copula-based_2009
+
+
+## Inference
+
+[Given data and a joint model specified by margins and copula, how to estimate marginal and copula parameters and perform inference]
+
+Inference on the resulting multivariate distribution function can be used to determine the effect of intervention for each individual outcome, and the dependence between outcomes.
+
+Joint estimation vs. 2-stage estimation (first estimate marginal parameers, then fix marginals and estimate copula parameters)
+
+-Frequentist/MLE
+
+-Bayesian
+
+Principled method of combining prior beliefs concerning parameters with additional data
+based on equation \@ref(eq:bayes1)
 
 \begin{gather}
-E(Z(s))=\mu(s)=\mu,\text{for all }s \in D (\#eq:eq2-1)\\
-Var(Z(s))=\sigma^{2}(s)=\sigma^{2},\text{for all }s \in D (\#eq:eq2-2)\\
-Cov(Z(s_{1}),Z(s_{2}))=C(s_{i}-s_{j}),\text{for all }s_{i}\ne s_{j} \in D (\#eq:eq2-3)
+p(\theta|y)=\frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta)\,d\theta} (\#eq:bayes1)
 \end{gather}
-Equations \@ref(eq:eq2-1) and \@ref(eq:eq2-2) ensure that the mean and variance are constant and independent of location throughout the region $D$. Equation \@ref(eq:eq2-3) ensures that the covariance depends only on the difference between two locations, rather than the locations themselves. $C(\cdot)$ in equation \@ref(eq:eq2-3) is called the covariance function.
 
-Another possible assumption related to the variability between points is
-\begin{equation}
-  Var(Z(s_{1})-Z(s_{2}))=2\gamma(s_{i}-s_{j}),\text{for all }s_{i}\ne s_{j} \in D (\#eq:eq2-4)
-\end{equation}
-$2\gamma(\cdot)$ is called the variogram function and $\gamma(\cdot)$ is the semivariogram.
+In context of clinical trials - include elicited clinical expertise, previous (historical) studies
 
-A more general form of stationarity called intrinsic stationary is equivalent to accepting the assumptions in equations \@ref(eq:eq2-1),\@ref(eq:eq2-2) and \@ref(eq:eq2-4). The form of stationarity chosen for model will determine which of equation \@ref(eq:eq2-3) or \@ref(eq:eq2-4) is used to model spatial dependence between points.  Since the intrinsic stationarity assumption is more general and because the variogram and semivariogram have been shown to be more robust than the covariogram (citation) we will work with the semivariogram.
+Inference based on posterior probabilities more interpretable
 
-A non-numbered equation
+Other benefits 
+Adaptive designs, Bayesian data augmentation
 
-\begin{gather*}
-\hat{\gamma}(\mathbf{h})=\frac{1}{2|N(\mathbf{h})|}\sum_{N(\mathbf{h})}(Z(s_{i})-Z(s_{j}))^{2}
-\end{gather*}
+@smith_bayesian_nodate
+
+## Extensions
+
+* Vine copulas - model distributions with >2 dimensions using paired bivariate copulas
+
+Bayesian inference for multivariate copulas using pair-copula constructions [@min_bayesian_nodate]
 
 
-Equation \@ref(eq:bayes1)
+* Conditional copulas - model dependence structure in copula conditional on covariates, calibration function
 
-[@smith_bayesian_nodate; @biswas_bayesian_2009].  
- 
- We use the R package ``copula" @hofert_copula:_2016. 
- 
- This is the second time citing @joe_dependence_2015
- 
+Statistical testing of covariate effects in conditional copula models [@acar_statistical_2013]
+
+In mixed company: Bayesian inference for bivariate conditional copula models with discrete and continuous outcomes [@craiu_mixed_2012]
+
+-> single-index copulas 
+Single-index copulas [@fermanian_single-index_2018]
+
+Gaussian Process Single Index Models for Conditional Copulas [@levi_gaussian_2016]
+
+* Factor copula - model dependence between outcomes and latent factors assume; independent outcome conditional on factor
+
+Bayesian Inference for the One-Factor Copula Model [@tan_bayesian_2018]
+
+Factor copula models for multivariate data [@krupskii_factor_2013]
+
+* Semi-parametric and non-parametric copulas - estimate copula form empirically
+
+Extending the rank likelihood for semiparametric copula estimation [@hoff_extending_2007]
+
+A Nonparametric Bayesian Approach to Copula Estimation [@ning_nonparametric_2017]
+
+Bayesian Nonparametric Inference for a Multivariate Copula Function 
+[@wu_bayesian_2014]
+
+other extensions?

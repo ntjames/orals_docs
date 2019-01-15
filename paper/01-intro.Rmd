@@ -2,82 +2,100 @@
 
 ## Background
 
-Clinical trials are considered the gold standard for evaluated of medical intervention [cite].
+[Provide context for type of problem to be solved and why joint models are useful to solve them]
 
-Principles of beneficence, etc.. (check ICH guidelines) mean that all interventions must in principle be evaluated for both efficacy and safety and further these benefits must outweigh the risks [cite]. Traditionally the efficacy and safety effects are evaluated using a series of trials with four sequential phases. Phase I are first-in-human trials designs usually performed on a small number of healthy participants to determine dosing (and other PK/PD?). Phase II trials are often first to test intervention in patients with the disease of interest and are used to determine efficacy and make go/no-go decision about whether to continue drug development. Phase III trials confirm the efficacy found in early studies and gather more information about adverse events. These studies are usually the pivotal studies required by regulatory agencies to approve a drug for marketing. Finally, Phase IV studies are ongoing surveillance ... [cite]
+Randomized clinical trials are considered the gold standard for evaluating a medical intervention and often involve multiple simulataneous endpoints. For example, in phase I-II trials interest may lie in the effect of dose on both efficacy and toxicity endpoints simultaneously. Similarly, later phase trials may seek to quantify the risk-benefit tradeoffs of the intervention. Further, many studies are designed to measure the effects of the intervention on a group of several co-primary outcomes representing different dimensions of the underlying disease @evans_fundamental_2016 and most trials collect data on multiple types of adverse events. 
 
-Usually the effect of treatment on efficacy and safety outcomes are explored with separate models for each type of outcome
+In these situations it is common to perform a separate analysis for each of the outcomes, but modeling the multiple outcomes together in a single joint model has several advantages. First, it provides a better characterization of the association between intervention and each individual outcome as well as the relationship between outcomes. With a joint model the investigator can answer questions involving combinations of outcomes, i.e. probability that either the intervention has a specified level of effectiveness *or* the risk of adverse events is low or whether the intervention is efficacious for two correlated co-primary endpoints. In addition to providing a more complete picture of how the intervention works in multiple dimensions, joint modelling also avoids issues related to multiple testing and can lead to increased power and better control of Type I error @de_leon_copula-based_2011.
 
-Further, many studies include several outcomes (endpoints) of interest represent the effects of the intervention on a multiple (pathologies/disease processes?) and interest may
+<!--
+and interest may lie in the how the intervention simultaneously affects all these outcomes.
+There are also situations where multiple efficacy or safety events 
+These trials are often designed to determine the effect of the intervention on a single primary endpoint.
 
-Same with multiple types of adverse event
+Principle of beneficence means that benefits must outweigh the risks implying that all interventions must be evaluated for both efficacy and safety. Often the effect of treatment on efficacy and safety outcomes are explored with separate models for each type of outcome.
 
-For all these situations, modeling outcomes jointly uses data more efficiently [CITE] and provides a better characterization of the intervention across multiple domains[word choice?] simultaneously
+quantify tradeoff between outcomes and answer questions involving combinations, i.e. probability that intervention is effective and risk of adverse events is low 
 
-(Can occur at multiple phases - phase I/II dosing toxicity/efficacy, phase III benefit-risk , phase IV? adverse risk assessment)
+Further, many studies include several outcomes (endpoints) of interest representing the effects of the intervention on a multiple (pathologies/disease processes?) and interest may lie in the how the intervention simultaneously affects all outcomes. Same principle applies with multiple adverse event types
 
-Several strategies have been proposed for such joint models including blah, blah [cite]. In this report I will focus on use of copulas for joint  models @costa_bayesian_2018.
+[Other applications - surrogate variable analysis]
+
+Rather than making a binary yes/no decision on whether a new treatment is effective, modeling multivariate outcomes allows the investigator to quantify efficacy along a gradient. i.e. what benefit can be achieved with a low, medium, or high risk of adverse event. What dose level provides the best balance of efficacy and toxicity
+
+applications at multiple phases - phase I/II dosing toxicity/efficacy, phase III benefit-risk, phase IV? adverse risk assessment]
+-->
+
+Several strategies have been proposed for such joint models including classical multivariate regression (multivariate Normal, multivariate student-t), factorization models (for outcomes $Y_1$ and $Y_2$ $P(Y_1|Y_2)P(Y_2)$) and frailty/random effects models [@teixeira-pinto_correlated_2009, other citations]. In this report I will focus on use of copulas for joint models @costa_bayesian_2018.
 
 ## Copulas
 
-In the usual case, each outcome is modeled by a univariate function of treatment and and other covariates
+[Introduction to the copula approach to joint modeling]
 
-A copula is a mathematical function that combines univariate distributions to create a multivariate distribution. Importantly, Sklar's Theorem[cite] guarantees that a proper multivariate distribution function can be constructed by combining any univariate distribution functions (any?? check discrete) and a copula 
+A copula is a mathematical function that 'couples' separate univariate distributions together to create a single joint, multivariate distribution. Importantly, Sklar's Theorem [@joe_dependence_2015, cite original Sklar paper] guarantees that a unique multivariate distribution function can be constructed by combining any continuous univariate distribution functions and a copula.
 
-this is an example of a citation @nelsen_introduction_2006.
+Figure \@ref(fig:gumbel-cop) shows two univariate distributions, a standard Normal and an Exponential. Combining the univariate distributions with a 'Gumbel' copula results in the bivariate distribution shown.
 
-A distinct advantage of the copula approach is the ability to "couple" arbitrary univariate models, thereby allowing modeling of the marginal univariate outcomes to be separated from modeling of the copula, which contains information about the correlation (more general term) between the outcomes
+```{r gumbel-cop, fig.cap='Multivariate distribution with Normal and Exponential margins combined using a Gumbel copula', fig.show = 'hold', fig.align='center', out.width='45%'}
+# plot Normal margin
+curve(dnorm,-4,4,yaxt="n",xlab="",ylab="", main="Normal")
 
-Further details on copulas and copula regression are presented below 
+# plot Exponential margin
+curve(dexp(x,0.4),0,8,yaxt="n",xlab="",ylab="", main="Exponential")
 
-this is another citation @joe_dependence_2015
-
-We can also include a figure made from R code such as the Gumbel copula in figure \@ref(fig:gumbel-cop).
-
-
-```{r gumbel-cop, fig.cap="Gumbel copula"}
-#curve(dnorm,-5,5,xaxt="n",yaxt="n",xlab="",ylab="")
-#curve(dgamma(x,2),0,6,xaxt="n",yaxt="n",xlab="",ylab="")
-
+# define Gumbel copula
 exMvd <- mvdc(copula = archmCopula(family = "gumbel", param = 1.2),
-              margins = c("norm", "gamma"),
+              margins = c("norm", "exp"),
               paramMargins = list(list(mean=0, sd = 1),
-                                  list(shape=2, rate = 1)))
-
-persp(exMvd, dMvdc, xlim=c(-4,4), ylim=c(-1,8), shade=0.3,
-      theta=50, phi=20, box=FALSE, r=1, xaxs = "i")
+                                  list(rate = 0.4)))
+# plot joint distribution
+persp(exMvd, dMvdc, xlim=c(-4,4), ylim=c(-1,8), 
+      xlab="Normal", ylab="Exponential", zlab="",
+      shade=0.3, theta=50, phi=20, box=TRUE, r=1, xaxs = "i")
 ```
 
+A distinct advantage of the copula approach is the ability to combine arbitrary univariate models, thereby separating the modeling of the marginal univariate outcomes from modeling of the copula, which contains information about the dependence between the outcomes. 
 
-Bla bla bla this is an example of a citation @joe_dependence_2015
+$$Y_{tox}=\beta_{tox0} + \beta_{tox1} X_{dose} \quad Y_{eff}=\beta_{eff0} + \beta_{eff1} X_{dose}$$
+<!--
+A univariate regression model is used to explain the relationship between a single outcome and treatment. 
 
-We can also include an external picture as seen in figure \@ref(fig:fig1). it's a placeholder for now
+2 outcomes = 2 separate univariate regression models 
 
-```{r fig1, fig.cap="Some Figure"}
+[After explaining idea, try adding 'in other words ...' to get different take]
+-->
+
+Further details on copulas and copula regression are presented below @joe_dependence_2015,  @nelsen_introduction_2006.
+
+<!--
+Can include an external picture as seen in figure \@ref(fig:fig1). it's a placeholder for now
+-->
+
+```{r fig1, fig.cap="Some Figure", fig.align='center', out.width='50%'}
 knitr::include_graphics(file.path(wd,"fig","placeholder.jpg"))
 ```
 
 
+### Other joint modelling approaches
 
-## Inference
+[Contrast to other joint modelling approaches pointing out similarities, equivalances, differences]
 
-Inference on the resulting multivariate distribution function can be used to determine how the outcomes are correlated and can be performed under several paradigms 
+For many other multivariate approaches the joint model or dependence structure determines the form of the univariate margins as well. 
 
--Frequentist
+Multivariate regression - MV normal, MV t-distribution
 
--Bayesian
+Factorized models - for outcomes $X$ and $Y$ $P(X|Y)P(Y)$
 
-Principled method of combining prior beliefs concerning parameters with additional data
+Frailty/random effects
 
-\begin{gather}
-p(\theta|y)=\frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta)\,d\theta} (\#eq:bayes1)
-\end{gather}
+## Applications
 
-In context of clinical trials - include elicited clinical expertise, previous (historical) studies
+[Introduce specific examples in clinical trials where copula models are used]
 
-Inference based on posterior probabilities more interpretable
+--> Toxicity-efficacy
 
-Adaptive designs??
+--> Risk-benefit
 
--Likelihood??
+--> Surrogacy assessment?
+
 

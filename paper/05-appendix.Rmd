@@ -1,9 +1,9 @@
 
 # (APPENDIX) Appendix {-}
 
-# Something Technical
+# Technical Supplement
 
-This appendix has the technical details used to derive ...
+This appendix has the technical details used to derive copula likelihood function, etc.
 
 `r if (!knitr::is_html_output()) '# Code Appendix'` 
 

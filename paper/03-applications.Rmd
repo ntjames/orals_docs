@@ -1,8 +1,73 @@
 
 # Applications
 
-## EffTox/Phase I-II
+[2 main examples, can also provide smaller examples and summaries]
 
+Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've laid the groundwork by discussing copula theory, we can see how these models are used in practice.
 
+## Dose-finding
+
+Dose-Finding Based on Efficacy-Toxicity Trade-Offs
+@thall_dose-finding_2004
+
+Bayesian Dose Finding in Oncology for Drug Combinations by Copula Regression @yin_bayesian_2009
+
+Dose-Finding Based on Bivariate Efficacy-Toxicity Outcome Using Archimedean Copula @tao_dose-finding_2013
+
+Evaluating the performance of copula models in phase I-II clinical trials under model misspecification
+@cunanan_evaluating_2014
+
+### Optimal design
+Optimal design to discriminate between rival copula models for a bivariate binary response [@deldossi_optimal_2018]
+
+Design of experiments for bivariate binary responses modelled by Copula functions [@denman_design_2011]
+
+Optimal designs for copula models [@perrone_optimal_2016]
 
 ## Benefit-Risk
+
+Bayesian Joint Modelling of Benefit and Bisk in Drug Development
+[@costa_bayesian_2018]
+
+The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future Directions
+[@costa_case_2017]
+
+
+## Other Applications
+
+### Composite outcomes vs joint marginal analyses
+
+Properties of composite time to first event versus joint marginal analyses of multiple outcomes
+[@bebu_properties_2018]
+
+### Survival outcomes 
+
+Joint modeling of progression-free survival and overall survival by a Bayesian normal induced copula estimation model
+[@fu_joint_2013]
+
+<!--NOTE: need to change title in bibtex library to exclude unicode tau -->
+Quantifying the association between progression-free survival and overall survival in oncology trials using Kendall's $\tau$: Correlation between progression-free survival and overall survival
+@weber_quantifying_2018
+
+Mixed response and time-to-event endpoints for multistage single-arm phase II design
+@lai_mixed_2015
+
+Estimating the association parameter for copula models under dependent censoring [@wang_estimating_2003]
+
+A Copula Approach to Joint Modeling of Longitudinal Measurements and Survival Times Using Monte Carlo Expectation-Maximization with Application to AIDS Studies [@ganjali_copula_2015]
+
+<!--
+- as alternative to frailty?
+(Find book 'The Frailty Model'?) 
+-->
+
+### Surrogacy assessment using principal stratification
+
+Surrogacy assessment using principal stratification and a Gaussian copula model
+@conlon_surrogacy_2017
+
+<!--
+case-control/paired study??
+
+ENAR topic - Operating Characteristics of Bayesian Joint Benefit-Risk Copula Models
+-->
