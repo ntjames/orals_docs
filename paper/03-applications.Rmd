@@ -7,6 +7,8 @@ Several applications of copula modeling in clinical trials were mentioned briefl
 
 ## Dose-finding
 
+[pick one as main ex.]
+
 Dose-Finding Based on Efficacy-Toxicity Trade-Offs
 @thall_dose-finding_2004
 
@@ -39,27 +41,6 @@ The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future
 
 Properties of composite time to first event versus joint marginal analyses of multiple outcomes
 [@bebu_properties_2018]
-
-### Survival outcomes 
-
-Joint modeling of progression-free survival and overall survival by a Bayesian normal induced copula estimation model
-[@fu_joint_2013]
-
-<!--NOTE: need to change title in bibtex library to exclude unicode tau -->
-Quantifying the association between progression-free survival and overall survival in oncology trials using Kendall's $\tau$: Correlation between progression-free survival and overall survival
-@weber_quantifying_2018
-
-Mixed response and time-to-event endpoints for multistage single-arm phase II design
-@lai_mixed_2015
-
-Estimating the association parameter for copula models under dependent censoring [@wang_estimating_2003]
-
-A Copula Approach to Joint Modeling of Longitudinal Measurements and Survival Times Using Monte Carlo Expectation-Maximization with Application to AIDS Studies [@ganjali_copula_2015]
-
-<!--
-- as alternative to frailty?
-(Find book 'The Frailty Model'?) 
--->
 
 ### Surrogacy assessment using principal stratification
 

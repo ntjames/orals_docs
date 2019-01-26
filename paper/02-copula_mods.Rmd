@@ -1,37 +1,119 @@
 
-# Joint Copula Models
+# Copula Models
 
 Before giving more details about specific applications, we will review some of the fundamentals of copula theory.
 
-## Definition
+## Notation, Definitions, and Sklar's Theorem
 
 [Definition, Sklar's Theorem, example]
+
+$d$ - multivariate dimension
+$n$ - sample size
+
+$F$ - cumulative distribution function 
+
+$F_j$ - $j^{th}$ univariate distribution function, $j=1,\ldots,d$ 
+
+$F_j^{-1}$ - inverse of $j^{th}$ univariate cumulative distribution function $F_j^{-1}(p)=\inf\{x:F_j(x)\ge p\}$ for $0<p<1$
+
+describe Probability integral transform $F_1(X_1) \sim U_1$
+
+
+
+f - density function or probability mass function
+
+$Y_j$ - $j^{th}$ random variable
+
+$y_j$ - observed value of $j^{th}$ random variable
+
+X
+x
+
+C - copula (distribution) function
+c - copula density
+
 
 Sklar's theorem (from Joe)
 
 For a d-variate distribution $F$ with $jth$ univariate margin $F_j$, the copula associated with $F$ is a distribution function $C: [0,1]^d \to [0,1]$ with $Uniform(0,1)$ margins that satisfies:
 \begin{gather}
-F(\mathbf{y})=C(F_1(y_1),\ldots,F_d(y_d)), \, \mathbf{y} \in \mathbb{R}^d (\#eq:eq2-1)
+F(\mathbf{y})=Pr(Y_1 \le y_1, \ldots, Y_d \le y_d)=C(F_1(y_1),\ldots,F_d(y_d)), \, \mathbf{y} \in \mathbb{R}^d (\#eq:eq2-1)
 \end{gather}
 (a) If $F$ is a continuous d-variate distribution with univariate margins $F_1,\ldots, F_d$, and quantile functions $F_1^{-1},\ldots, F_d^{-1}$, then
 \begin{gather}
-C(\mathbf{u})=F(F_1^{-1}(u_1),\ldots, F_d^{-1}(u_d))\, \mathbf{u} \in [0,1]^d (\#eq:eq2-2)
+C(\mathbf{u})=F(F_1^{-1}(u_1),\ldots, F_d^{-1}(u_d)),\, \mathbf{u} \in [0,1]^d (\#eq:eq2-2)
 \end{gather}
-Is the unique choice.  
+is the unique choice.  
 
-
-(a) If $F$ is a d-variate distribution of discrete random variables (or partly continuous and partly discrete), then the copula is unique only on the set
+(b) If $F$ is a d-variate distribution of discrete random variables (or partly continuous and partly discrete), then the copula is unique only on the set
 \begin{gather}
-Range(F_1) \times \cdots \times Range(F_d) (\#eq:eq2-3)
+Range(F_1) \times \cdots \times Range(F_d) \text{ where } Range(F_j)=\{F_j(x): x \in \mathbb{R}\}(\#eq:eq2-3)
 \end{gather}
 
 Equations \@ref(eq:eq2-1) and \@ref(eq:eq2-2) show the relationship between the marginal distributions $F_1$ through $F_d$ and the joint distibution $F$, linked by the copula $C$. The probability integral transform ensures that $F_1(y_1) = u_1 \sim Uniform(0,1)$. 
-Given continuous marginal distributions and a specified copula, the resulting multivariate distribution is unique. If the marginal distributions are discrete, the copula is only unique on the set defined in equation\@ref(eq:eq2-3).
+Given continuous marginal distributions and a specified copula, the resulting multivariate distribution is unique. However, if the marginal distributions are discrete, the copula is only unique on the set defined in equation\@ref(eq:eq2-3). Informally, the range (also called the image) of a distribution function is the subset of all the numbers the function maps to. If the distribution function is continuous, the output can be any real number between 0 and 1. In contrast, the output of a discrete distribution function does not include all real numbers in [0,1]. So a copula can be constructed with a discrete margin, but it is only unique at certain values along that margin. 
 
-Note that this formulation does not specify what copula should be used. Substituting different copulas results in different multivariate distributions
+There are several practical consequences when dealing with discrete margins. For example, the usual probability integral transform does not hold, so more exotic transformations are required to obtain uniform distributions [@niewiadomska-bugaj_grade_2005, @ruschendorf_distributional_2009]
 
-Example - Gaussian copula
+[See https://cran.r-project.org/web/packages/copula/vignettes/empiricial_copulas.html Example 3 and Genest & Neslehova paper for examples/explanation of non-uniqueness with discrete copula] 
 
+Genest and Neslehova [@genest_primer_2007] describe many limitations and potential problems regarding copulas with discrete models which will mention during the review of copula concepts in the next section. 
+
+This formulation does not specify what copula should be used. Substituting different copulas results in different multivariate distributions.
+The class of all the multivariate distribution functions with given margins $F_1,\ldots,F_d$ is called the *Fréchet class*. Similarly, the class of all distribution functions that can be derived from a given copula, C, is called a *meta-C* model.
+
+The equation for the Normal (or Gaussian) copula is $C_{R}^{Norm}(u_1,\ldots,u_d)=\Phi_d(\Phi^{-1}(u_1),\ldots,\Phi^{-1}(u_d)|R)$ where $\Phi_d(\cdot|R)$ is the d-dimensional multivariate normal distribution with correlation matrix $R$, $\Phi^{-1}$is the inverse of the univariate standard normal distribution and $u_j \in [0,1]$ for $j=1,\ldots,d$. If the margins are all standard normal we have $C_{R}^{Norm}(\Phi(z_1),\ldots,\Phi(z_d))=\Phi_d(\Phi^{-1}(\Phi(z_1)),\ldots,\Phi^{-1}(\Phi(z_d))|R)=\Phi_d(z_1,\ldots,z_d|R)$ which is the usual multivariate normal distribution. Using margins which are not standard normal will produce a distribution which is *not* multivariate Normal. However the dependence between the two margins, encapsulated in the copula, is identical in both scenarios. This is demonstrated in figure \@ref(fig:norm-cop-ex) where the same Normal copula is used to construct two multivariate distributions (both members of meta-$C_{R}^{Norm}$ model) by specifying different marginal distributions.
+
+```{r norm-cop-ex, fig.cap='n=2000 random draws from the bivariate distribution constructed with a Normal copula and (1) standard normal margins or (2) Student-$t_3$ and $exp(1)$ margins. True $\\rho=0.6322$ and $\\tau=0.4505$', fig.show = 'hold', fig.align='center', out.width='45%', cache=TRUE}
+## Normal copula example
+
+set.seed(2734)
+
+# define Normal copula
+nc <- normalCopula(0.65)
+
+# multivariate distributions combining margins and copula
+mvd_nc1 <- mvdc(copula = nc, margins = c("norm", "norm"),
+              paramMargins = list(list(mean = 0, sd = 1), 
+                                  list(mean = 0, sd = 1)))
+
+mvd_nc2 <- mvdc(copula = nc, margins = c("t", "exp"),
+              paramMargins = list(list(df = 3), 
+                                  list(rate = 1)))
+
+#true rho and tau
+#rho(nc)
+#tau(nc)
+
+# plot joint densities
+#contour(mvd_nc1, dMvdc, xlim=c(-4,4), ylim=c(-4,4), 
+#      xlab="Normal", ylab="Normal")
+
+mvd_nc1_samps <- rMvdc(2000, mvd_nc1)
+mvd_nc1_rho <- round(cor(mvd_nc1_samps, method="spearman"),3)
+mvd_nc1_tau <-round(cor(mvd_nc1_samps, method="kendall"),3)
+
+leg1<-c(as.expression( bquote(hat(rho)~"="~.(mvd_nc1_rho[1,2])) ), 
+        as.expression( bquote(hat(tau)~"="~.(mvd_nc1_tau[1,2]))))
+
+plot(mvd_nc1_samps, pch=16, col=rgb(0,0,0,0.2), xlab="(1)", ylab="")
+legend("bottomright",legend=leg1)
+
+# plot joint density
+#contour(mvd_nc2, dMvdc, xlim=c(-4,4), ylim=c(-2,6), 
+#      xlab="Student t", ylab="Exponential")
+
+mvd_nc2_samps <- rMvdc(2000, mvd_nc2)
+mvd_nc2_rho <- round(cor(mvd_nc2_samps, method="spearman"),3)
+mvd_nc2_tau <- round(cor(mvd_nc2_samps, method="kendall"),3)
+
+leg2<-c(as.expression( bquote(hat(rho)~"="~.(mvd_nc2_rho[1,2])) ), 
+        as.expression( bquote(hat(tau)~"="~.(mvd_nc2_tau[1,2]))))
+
+plot(mvd_nc2_samps, pch=16, col=rgb(0,0,0,0.1), xlab="(2)", ylab="")
+legend("bottomright",legend=leg2)
+
+```
 
 ## Copula concepts
 
@@ -39,15 +121,25 @@ Example - Gaussian copula
 
 -conditions for MV cdfs/copulas?  
 
+There are several conditions required for 
+
 -independence copula  
 
--upper and lower bounds  
+-upper (comonotonic) and lower (countermonotonic) bounds  
 
--dependence measures  
+### Dependence measures  
+
+-spearman's rho, kendall's tau, others?
+
+
+For discrete margins, measures of association may depend on the margins in this scenario, which is counter to the goal of separating marginal and dependence model specification
+[@denuit_constraints_2005] ==> can no longer directly interpret copula parameter in terms of dependence
 
 -tail probability/tail dependence/tail asymmetry  
 
--Two major classes/families: Elliptical - multivariate Normal, multivariate t & Archimedean
+### Copula familes 
+
+-Two major classes/families: Elliptical - multivariate Normal, multivariate t & Archimedean (Clayton, Frank, Gumbel, others?)
  see table \ref{tab:tab1}  
  
 -Combinations/Comprehensive: mixtures of copulas are also copulas 
@@ -73,15 +165,29 @@ colnames(tab1)<-c("Name","Tail Dependence")
 knitr::kable(tab1, booktabs = TRUE, caption = 'Popular Copulas')
 ```
 
-We use the R package ``copula" @hofert_copula:_2016 for basic copula functions. 
+The text *Elements of Copula Modeling with R* [@hofert_elements_2018] describes the R package `copula` @hofert_copula:_2016 which was used for basic copula functions.
 
 ## Copula regression
 
 [Extension to regression]
 
+[Regression models for marginal outcomes]
 In order to use copulas in a clinical trial setting, the basic theory must be extended to include covariates indicating the groups being compared (dose levels, treatment vs. control, etc.) and possibly adjust for other factors.
 
 This is done by replacing each marginal distribution with a conditional distribution tied to a regression model $F_1(Y_1) \Rightarrow F_1(Y_1|X_1)$ @kolev_copula-based_2009
+
+[Regression models for dependence parameter]
+* Conditional copulas - model dependence structure in copula conditional on covariates, calibration function
+
+Statistical testing of covariate effects in conditional copula models [@acar_statistical_2013]
+
+In mixed company: Bayesian inference for bivariate conditional copula models with discrete and continuous outcomes [@craiu_mixed_2012]
+
+-> single-index copulas 
+Single-index copulas [@fermanian_single-index_2018]
+
+Gaussian Process Single Index Models for Conditional Copulas [@levi_gaussian_2016]
+
 
 
 ## Inference
@@ -94,6 +200,8 @@ Joint estimation vs. 2-stage estimation (first estimate marginal parameers, then
 
 -Frequentist/MLE
 
+Joe - two stage inference for margins
+
 -Bayesian
 
 Principled method of combining prior beliefs concerning parameters with additional data
@@ -103,38 +211,80 @@ based on equation \@ref(eq:bayes1)
 p(\theta|y)=\frac{p(y|\theta)p(\theta)}{\int p(y|\theta)p(\theta)\,d\theta} (\#eq:bayes1)
 \end{gather}
 
+Properly propogate errors by accounting for variance terms in marginal models to assess variance of copula parameters [@craiu_mixed_2012]
+
 In context of clinical trials - include elicited clinical expertise, previous (historical) studies
 
 Inference based on posterior probabilities more interpretable
 
 Other benefits 
-Adaptive designs, Bayesian data augmentation
+Adaptive designs [@yuan_bayesian_2011], Bayesian data augmentation [@smith_estimation_2012]
 
-@smith_bayesian_nodate
+Smith describes benefits of the Bayesian paradigm [@damien_bayesian_2013]
 
 ## Extensions
 
-* Vine copulas - model distributions with >2 dimensions using paired bivariate copulas
+Although we will focus on only a few [relatively basic??] applications of copula modeling, there is a large and varied literature applying and extending these models to other settings. 
 
-Bayesian inference for multivariate copulas using pair-copula constructions [@min_bayesian_nodate]
+Copula models have been developed to analyze multivariate survival data, longitudinal and clustered data, or situations with both (so-called 'joint' models).
+
+* Survival outcomes
+
+Inferences on the Association Parameter in Copula Models for Bivariate Survival Data [@shih_inferences_1995]
+
+Estimating the association parameter for copula models under dependent censoring [@wang_estimating_2003]
+
+Flexible Maximum Likelihood Methods for Bivariate Proportional Hazards Models [@he_flexible_2003]
+
+Bivariate Survival Modeling: a Bayesian approach based on Copulas [@romeo_bivariate_2006]
+
+Joint modeling of progression-free survival and overall survival by a Bayesian normal induced copula estimation model
+[@fu_joint_2013]
+
+<!--NOTE: need to change title in bibtex library to exclude unicode tau -->
+Quantifying the association between progression-free survival and overall survival in oncology trials using Kendall's $\tau$: Correlation between progression-free survival and overall survival
+[@weber_quantifying_2018]
+
+Mixed response and time-to-event endpoints for multistage single-arm phase II design
+[@lai_mixed_2015]
+
+<!--
+- as alternative to frailty?
+(Find book 'The Frailty Model'?) 
+-->
 
 
-* Conditional copulas - model dependence structure in copula conditional on covariates, calibration function
+* Longitudinal and Clustered data
 
-Statistical testing of covariate effects in conditional copula models [@acar_statistical_2013]
+Modeling Longitudinal Data Using a Pair-Copula Decomposition of Serial Dependence [@smith_modeling_2010]
 
-In mixed company: Bayesian inference for bivariate conditional copula models with discrete and continuous outcomes [@craiu_mixed_2012]
+Joint Regression Analysis for Discrete Longitudinal Data [@madsen_joint_2011]
 
--> single-index copulas 
-Single-index copulas [@fermanian_single-index_2018]
+Estimation and inference on the joint conditional distribution for bivariate longitudinal data using Gaussian copula [@kwak_estimation_2017] 
 
-Gaussian Process Single Index Models for Conditional Copulas [@levi_gaussian_2016]
+Estimation and inference of the joint conditional distribution for multivariate longitudinal data using nonparametric copulas [@kwak_estimation_2017-1]
 
-* Factor copula - model dependence between outcomes and latent factors assume; independent outcome conditional on factor
+Gaussian Copula Mixed Models for Clustered Mixed Outcomes, With Application in Developmental Toxicology [@wu_gaussian_2014]
 
-Bayesian Inference for the One-Factor Copula Model [@tan_bayesian_2018]
 
-Factor copula models for multivariate data [@krupskii_factor_2013]
+* Joint longitudinal/survival models
+
+A Copula Approach to Joint Modeling of Longitudinal Measurements and Survival Times Using Monte Carlo Expectation-Maximization with Application to AIDS Studies [@ganjali_copula_2015]
+
+A copula model for joint modeling of longitudinal and time-invariant mixed outcomes: Joint modeling of longitudinal and time-invariant mixed outcomes [@kurum_copula_2018]
+
+
+Another area of active research is vine copulas which are used to model multivariate distributions with more than 2 dimensions using paired bivariate copulas. 
+
+* Vine copulas - model distributions with >2 dimensions using paired bivariate copulas 
+
+Bayesian inference for multivariate copulas using pair-copula constructions [@min_bayesian_2010]
+
+Bayesian model selection of Regular Vine Copulas [@gruber_bayesian_2017]
+
+
+
+* Other extensions:
 
 * Semi-parametric and non-parametric copulas - estimate copula form empirically
 
@@ -145,4 +295,10 @@ A Nonparametric Bayesian Approach to Copula Estimation [@ning_nonparametric_2017
 Bayesian Nonparametric Inference for a Multivariate Copula Function 
 [@wu_bayesian_2014]
 
-other extensions?
+
+* Factor copula - model dependence between outcomes and latent factors; independent outcome conditional on factor
+
+Bayesian Inference for the One-Factor Copula Model [@tan_bayesian_2018]
+
+Factor copula models for multivariate data [@krupskii_factor_2013]
+

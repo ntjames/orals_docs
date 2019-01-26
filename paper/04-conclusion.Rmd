@@ -1,4 +1,4 @@
 
 # Conclusion
 
-This is the concluding section
+Copula models have wide applicability to questions in clinical trials for which correctly accounting for dependence between multiple outcomes is important to answer the underlying scientific questions.

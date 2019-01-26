@@ -5,8 +5,17 @@
 
 This appendix has the technical details used to derive copula likelihood function, etc.
 
+# R Session Information
+
+```{r, echo=FALSE}
+sessionInfo()
+```
+
+<!-- Code appendix if knitting to pdf -->
 `r if (!knitr::is_html_output()) '# Code Appendix'` 
 
 ```{r, ref.label='gumbel-cop', echo=!knitr::is_html_output(), eval=FALSE}
 ```
 
+```{r, ref.label='norm-cop-ex', echo=!knitr::is_html_output(), eval=FALSE}
+```

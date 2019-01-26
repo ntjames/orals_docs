@@ -2,9 +2,16 @@
 
 ## Background
 
-[Provide context for type of problem to be solved and why joint models are useful to solve them]
+[Provide context for type of problem to be solved, why its an interesting question, and why joint models are useful to solve them]
 
-Randomized clinical trials are considered the gold standard for evaluating a medical intervention and often involve multiple simulataneous endpoints. For example, in phase I-II trials interest may lie in the effect of dose on both efficacy and toxicity endpoints simultaneously. Similarly, later phase trials may seek to quantify the risk-benefit tradeoffs of the intervention. Further, many studies are designed to measure the effects of the intervention on a group of several co-primary outcomes representing different dimensions of the underlying disease @evans_fundamental_2016 and most trials collect data on multiple types of adverse events. 
+
+[give enough info to gain interest, but don't give away whole story]
+
+!!! introduce clinical example (treatment efficacy vs. safety) early and reference back to it throughout
+
+!!! basic problem should be stated as clearly as possible
+
+Randomized clinical trials are considered the gold standard for evaluating a medical intervention and often involve multiple simultaneous endpoints. For example, in phase I-II trials interest may lie in the effect of dose on both efficacy and toxicity endpoints simultaneously. Similarly, later phase trials may seek to quantify the risk-benefit tradeoffs of the intervention. Further, many studies are designed to measure the effects of the intervention on a group of several co-primary outcomes representing different dimensions of the underlying disease @evans_fundamental_2016, and most trials collect data on multiple types of adverse events. 
 
 In these situations it is common to perform a separate analysis for each of the outcomes, but modeling the multiple outcomes together in a single joint model has several advantages. First, it provides a better characterization of the association between intervention and each individual outcome as well as the relationship between outcomes. With a joint model the investigator can answer questions involving combinations of outcomes, i.e. probability that either the intervention has a specified level of effectiveness *or* the risk of adverse events is low or whether the intervention is efficacious for two correlated co-primary endpoints. In addition to providing a more complete picture of how the intervention works in multiple dimensions, joint modelling also avoids issues related to multiple testing and can lead to increased power and better control of Type I error @de_leon_copula-based_2011.
 
@@ -28,33 +35,205 @@ applications at multiple phases - phase I/II dosing toxicity/efficacy, phase III
 
 Several strategies have been proposed for such joint models including classical multivariate regression (multivariate Normal, multivariate student-t), factorization models (for outcomes $Y_1$ and $Y_2$ $P(Y_1|Y_2)P(Y_2)$) and frailty/random effects models [@teixeira-pinto_correlated_2009, other citations]. In this report I will focus on use of copulas for joint models @costa_bayesian_2018.
 
-## Copulas
+## Copulas for Joint Modeling
 
 [Introduction to the copula approach to joint modeling]
 
-A copula is a mathematical function that 'couples' separate univariate distributions together to create a single joint, multivariate distribution. Importantly, Sklar's Theorem [@joe_dependence_2015, cite original Sklar paper] guarantees that a unique multivariate distribution function can be constructed by combining any continuous univariate distribution functions and a copula.
+A copula is a distribution function that 'couples' separate univariate distributions together to create a single joint, multivariate distribution. Importantly, Sklar's Theorem [@joe_dependence_2015, cite original Sklar paper] guarantees that a unique multivariate distribution function can be constructed by combining any continuous univariate distribution functions and a copula.
 
-Figure \@ref(fig:gumbel-cop) shows two univariate distributions, a standard Normal and an Exponential. Combining the univariate distributions with a 'Gumbel' copula results in the bivariate distribution shown.
+Figure \@ref(fig:gumbel-cop) shows two univariate distributions, a standard Normal and an Gamma. Combining the univariate distributions with a Gumbel copula $C_\theta(u,v)=\exp[-((-\log u)^\theta +(-\log v)^\theta)^{1/\theta}]$ where $\theta=2$ results in the bivariate distribution shown. Note that this choice of $\theta$ corresponds to Spearman's $\rho=0.6828$ or Kendall's $\tau=0.5$
 
-```{r gumbel-cop, fig.cap='Multivariate distribution with Normal and Exponential margins combined using a Gumbel copula', fig.show = 'hold', fig.align='center', out.width='45%'}
+```{r gumbel-cop, fig.cap='Multivariate density with Normal(0,1) and Gamma(2,1) margins combined using a Gumbel copula with $\\theta=2$', fig.show = 'hold', fig.align='center', out.width='45%'}
+## Gumbel copula example
+
 # plot Normal margin
-curve(dnorm,-4,4,yaxt="n",xlab="",ylab="", main="Normal")
+curve(dnorm,-4,4,yaxt="n",xlab=expression(Y[1]),ylab="", main="Normal")
 
-# plot Exponential margin
-curve(dexp(x,0.4),0,8,yaxt="n",xlab="",ylab="", main="Exponential")
+# plot Gamma margin
+curve(dgamma(x,2,1),0,6,yaxt="n",xlab=expression(Y[2]),ylab="", main="Gamma")
 
 # define Gumbel copula
-exMvd <- mvdc(copula = archmCopula(family = "gumbel", param = 1.2),
-              margins = c("norm", "exp"),
-              paramMargins = list(list(mean=0, sd = 1),
-                                  list(rate = 0.4)))
-# plot joint distribution
-persp(exMvd, dMvdc, xlim=c(-4,4), ylim=c(-1,8), 
-      xlab="Normal", ylab="Exponential", zlab="",
-      shade=0.3, theta=50, phi=20, box=TRUE, r=1, xaxs = "i")
+gc <- gumbelCopula(2)
+
+#rho(gc)
+#tau(gc)
+#wireframe2(gc, FUN=pCopula)
+
+# multivariate distribution combining margins and copula
+mvd_gc <- mvdc(copula = gc, margins = c("norm", "gamma"),
+              paramMargins = list(list(mean=0, sd = 1), list(shape=2, rate = 1)))
+
+# plot joint density
+persp(mvd_gc, dMvdc, xlim=c(-4,4), ylim=c(-1,8), 
+      xlab="Normal", ylab="Gamma", zlab="", ticktype="simple",
+      shade=0.3, theta=35, phi=20, box=TRUE, xaxs = "i")
+
+color2 <- rev(rainbow(11, start = 0/6, end = 4/6))
+
+contour(mvd_gc, dMvdc, xlim=c(-4,4), ylim=c(-1,6), 
+      xlab="Normal", ylab="Gamma", col=color2)
+
+# random draws from joint density
+#plot(rMvdc(500, mvd_gc), pch=16, col=rgb(0,0,0,0.5),
+#     xlab="Normal", ylab="Gamma")
 ```
 
-A distinct advantage of the copula approach is the ability to combine arbitrary univariate models, thereby separating the modeling of the marginal univariate outcomes from modeling of the copula, which contains information about the dependence between the outcomes. 
+```{r, eval=knitr::is_html_output(), fig.cap='Interactive plot for Figure \\@ref(fig:gumbel-cop)'}
+library(rgl)
+y1<-seq(-4,4,length=75)
+y2<-seq(-1,8,length=75)
+z1<-outer(y1,y2,FUN=function(a,b) dMvdc(matrix(c(a,b),nrow=75^2),mvd_gc))
+
+# color scheme
+num_col<-100
+#color <- heat.colors(num_col)
+color <- rev(rainbow(num_col, start = 0/6, end = 4/6))
+
+zcol <- cut(z1, num_col)
+
+plotid1<-persp3d(y1,y2,z1, col=color[zcol],
+                 xlab="Normal", ylab="Gamma", zlab="")
+
+fn<-spin3d(axis = c(0, 0, 1), rpm = 6) # spin function
+
+rglwidget(elementId = "plot3drgl1") %>% 
+  playwidget(par3dinterpControl(fn, 0, 10, steps=25),
+       step = 0.1, loop = TRUE, rate = 0.75,
+       components=c("Play","Slower","Faster","Reset","Slider"))
+
+```
+
+```{r, fig.cap='Multivariate density with Normal(0,1) and Gamma(4,1) margins combined using a Gumbel copula with $\\theta=2$', fig.show = 'hold', fig.align='center', out.width='48%'}
+
+tau <- 0.25
+
+# define Gumbel copula
+gc <- gumbelCopula( iTau(gumbelCopula(),tau) )
+cc <- claytonCopula( iTau(claytonCopula(),tau) )
+nc <- normalCopula( iTau(normalCopula(),tau) )
+
+marg <- c("norm", "gamma")
+marg_params <- list(list(mean=0, sd = 1), list(shape=4, rate = 1))
+
+if (0){
+rho(gc)
+rho(cc)
+rho(nc)
+
+tau(gc)
+tau(cc)
+tau(nc)
+}
+
+#wireframe2(gc, FUN=pCopula)
+
+# multivariate distribution combining margins and copula
+mvd_gc <- mvdc(copula = gc, margins = marg, paramMargins = marg_params)
+mvd_cc <- mvdc(copula = cc, margins = marg, paramMargins = marg_params)
+
+mvd_nc <- mvdc(copula = nc, margins = marg, paramMargins = marg_params)
+mvd_ic <- mvdc(copula = indepCopula(), margins = marg, paramMargins = marg_params)
+
+color2 <- rev(rainbow(11, start = 0/6, end = 4/6))
+
+if (0){
+# plot joint density
+persp(mvd_gc1, dMvdc, xlim=c(-4,4), ylim=c(-1,8), 
+      xlab="Normal", ylab="Gamma", zlab="", ticktype="simple",
+      shade=0.3, theta=35, phi=20, box=TRUE, xaxs = "i")
+
+contour(mvd_gc, dMvdc, xlim=c(-4,4), ylim=c(-1,6), 
+      xlab="Normal", ylab="Gamma", col=color2)
+
+
+  contour(mvd_gc, dMvdc, xlim=c(-4,4), ylim=c(-0.5,6), 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")
+  
+  contour(mvd_cc, dMvdc, xlim=c(-4,4), ylim=c(-0.5,6), 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")
+
+  contour(mvd_nc, dMvdc, xlim=c(-4,4), ylim=c(-0.5,6), 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")  
+
+  contour(mvd_ic, dMvdc, xlim=c(-4,4), ylim=c(-0.5,6), 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")     
+}
+
+xl <- c(-4,4)
+yl <- c(-0.5,8.5)
+
+# Gumbel cop
+op<-par(fig=c(0,0.75,0,0.75))
+contour(mvd_gc, dMvdc, xlim=xl, ylim=yl, 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")
+
+par(fig=c(0,0.75,0.45,1), new=TRUE)
+curve(dnorm,xl[1],xl[2],xlab="",ylab="", xlim=xl, bty="n")
+
+par(fig=c(0.6,0.9,0,0.75),new=TRUE)
+x_seq<-seq(0,yl[2],length=100)
+y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
+plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n")
+
+par(fig=c(0.6,0.9,0.45,1),new=TRUE)
+plot(rMvdc(500, mvd_gc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
+     pch='.', col=rgb(0,0,0,0.5))
+
+# Clayton cop
+par(fig=c(0,0.75,0,0.75))
+contour(mvd_cc, dMvdc, xlim=xl, ylim=yl, 
+      xlab="Normal", ylab="Gamma", col=color2, bty="n")
+
+par(fig=c(0,0.75,0.45,1), new=TRUE)
+curve(dnorm,xl[1],xl[2],xlab="",ylab="", xlim=xl, bty="n")
+
+par(fig=c(0.6,0.9,0,0.75),new=TRUE)
+x_seq<-seq(0,yl[2],length=100)
+y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
+plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n")
+
+par(fig=c(0.6,0.9,0.45,1),new=TRUE)
+plot(rMvdc(500, mvd_cc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
+     pch='.', col=rgb(0,0,0,0.5))
+
+if(0){
+persp(mvd_gc, dMvdc, n.grid=50, xlim=c(-4,4), ylim=c(-1,8), 
+      xlab="Normal", ylab="Gamma", zlab="", ticktype="simple",
+      shade=0.3, theta=35, phi=20, box=TRUE, xaxs = "i")
+
+persp(mvd_cc, dMvdc, n.grid=50, xlim=c(-4,4), ylim=c(-1,8), 
+      xlab="Normal", ylab="Gamma", zlab="", ticktype="simple",
+      shade=0.3, theta=35, phi=20, box=TRUE, xaxs = "i")
+}
+
+```
+
+```{r, fig.cap='Multivariate density with Normal(0,1) and Gamma(4,1) margins combined using a Gumbel copula with $\\theta=2$ 3d', fig.show = 'hold', fig.align='center', out.width='48%'}
+
+par(op)
+wireframe2(mvd_gc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 
+      xlab="Normal", ylab="Gamma", zlab="", zoom=0.8)
+
+wireframe2(mvd_cc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 
+      xlab="Normal", ylab="Gamma", zlab="", zoom=0.8)
+
+#      par.settings = list(box.3d = list(col=c(1,2,3,4,5,6,7,8,9),
+#                                        lty=c(1,1,2,2,1,2,1,1,1) )) 
+```
+
+<!--
+# plot Exponential margin
+#curve(dexp(x,0.4),0,8,yaxt="n",xlab="",ylab="", main="Exponential")
+
+#exMvd <- mvdc(copula = archmCopula(family = "gumbel", param = 1.2),
+#              margins = c("norm", "exp"),
+#              paramMargins = list(list(mean=0, sd = 1),
+#                                  list(rate = 0.4)))
+-->
+
+A distinct advantage of the copula approach is the ability to separate the specification of the marginal univariate models from the specification of the copula model, which contains information about the dependence between the outcomes. 
+
+In practice, this means we can use whatever regression model is best suited for each outcome and then combine these separate outcomes with the best dependence model. As we will see this offers a much higher degree of flexibility than more traditional models such as multivariate Normal regression.
 
 $$Y_{tox}=\beta_{tox0} + \beta_{tox1} X_{dose} \quad Y_{eff}=\beta_{eff0} + \beta_{eff1} X_{dose}$$
 <!--
@@ -80,13 +259,15 @@ knitr::include_graphics(file.path(wd,"fig","placeholder.jpg"))
 
 [Contrast to other joint modelling approaches pointing out similarities, equivalances, differences]
 
-For many other multivariate approaches the joint model or dependence structure determines the form of the univariate margins as well. 
+For many other multivariate approaches the joint model or dependence structure determines the form of the univariate margins as well. Limitations in available number of parametric multivariate distributions and dependence that can be modelled with them.
 
 Multivariate regression - MV normal, MV t-distribution
 
-Factorized models - for outcomes $X$ and $Y$ $P(X|Y)P(Y)$
+Factorized models - for outcomes $Y_1$ and $Y_2$ $P(Y_1|Y_2)P(Y_2)$
 
 Frailty/random effects
+
+--> Bivariate Survival Models induced by frailties [@oakes_bivariate_1989]
 
 ## Applications
 
