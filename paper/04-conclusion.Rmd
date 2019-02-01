@@ -2,3 +2,12 @@
 # Conclusion
 
 Copula models have wide applicability to questions in clinical trials for which correctly accounting for dependence between multiple outcomes is important to answer the underlying scientific questions.
+
+Copula models using a Bayesian paradigm have been fairly well explored in the context of early phase dose finding trials, but their application has been limited for other clinical trial settings in which Bayesian modeling may be advantageous. 
+For example, adaptive trials, sharing information on historical controls or between populations (ped vs adult, different countries or regions) [commensurate priors]
+
+Even if the dependence structure is not of interest, evidence of improvement in marginal inferences by borrowing information from the other margins through the dependence structure in the copula. [FIND citation and prelim code to support this!]
+
+- check de Leon & Zhu ANOVA extensions for mixed discrete and continuous data cited in de Leon
+- check He et al. a framework for joint modeling and joint assessment of efficacy and safety endpoints for probability of success evaluatin and optinal dose selection
+- check Cunanan & Koopmeiners Evaluating the performance of copula models in phase I-II clinical trials under model misspecification

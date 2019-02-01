@@ -5,6 +5,10 @@
 
 This appendix has the technical details used to derive copula likelihood function, etc.
 
+Give formulas for discrete and mixed margins likelihoods from Joe
+
+Mention extension to individual margins with both discrete and continuous components [@gunawan_mixed_2018]
+
 # R Session Information
 
 ```{r, echo=FALSE}
@@ -14,7 +18,10 @@ sessionInfo()
 <!-- Code appendix if knitting to pdf -->
 `r if (!knitr::is_html_output()) '# Code Appendix'` 
 
-```{r, ref.label='gumbel-cop', echo=!knitr::is_html_output(), eval=FALSE}
+```{r, ref.label='ex1-a', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='ex1-b', echo=!knitr::is_html_output(), eval=FALSE}
 ```
 
 ```{r, ref.label='norm-cop-ex', echo=!knitr::is_html_output(), eval=FALSE}

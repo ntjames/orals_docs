@@ -24,9 +24,10 @@ output:
 subparagraph: true
 documentclass: report
 bibliography: ["zotero_library.bib"]
+linestretch: 1.5
 biblio-style: apalike
 link-citations: yes
-csl: biosensors.csl
+csl: vancouver-brackets-only-year-no-issue.csl
 ---
 
 ```{r setup0, include=FALSE}
@@ -36,7 +37,7 @@ knitr::opts_chunk$set(echo = knitr::is_html_output())
 wd<-getwd()
 
 # load packages
-libs<-c("copula", "knitr", "kableExtra", "magrittr", "mvtnorm", "polycor", "ggplot2", "rstan")
+libs<-c("copula", "knitr", "kableExtra", "magrittr", "mvtnorm", "polycor", "ggplot2", "rstan","plotly")
 invisible(lapply(libs, library, character.only = TRUE))
 ```
 

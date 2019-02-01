@@ -83,7 +83,7 @@ mvd_nc1 <- mvdc(copula = nc, margins = c("norm", "norm"),
                                   list(mean = 0, sd = 1)))
 
 mvd_nc2 <- mvdc(copula = nc, margins = c("t", "exp"),
-              paramMargins = list(list(df = 3), 
+              paramMargins = list(list(df=3), 
                                   list(rate = 1)))
 
 #true rho and tau
@@ -136,15 +136,17 @@ Given continuous random variables $Y_1$ and $Y_2$ with unique copula $C$
 
 $Y_1$ and $Y_2$ are independent if and only if $C=\Pi$
 
--lower (countermonotonic) bounds and upper (comonotonic)   
-
 For $\mathbf{u} \in [0,1]^d$, define:
+
+-lower (countermonotonic) bound:    
 
 $W(\mathbf{u})=\max\{\sum_{j=1}^{d} u_j -d + 1, 0\}$ 
 
-and 
+and upper (comonotonic) bound:
 
 $M(\mathbf{u})=\min\{u_1,\ldots,u_d\},$
+
+$W(\mathbf{u}) \le C(\mathbf{u}) \le M(\mathbf{u})$
 
 - invariance to monotone transformations
 
@@ -181,8 +183,10 @@ see table `r if (knitr::is_html_output()) '\\@ref(tab:tab1-html)' else '\\@ref(t
 - variety of methods for constructing copulas with combination of desirable characteristics, e.g. mixture copulas $C^{mix}(\mathbf{u}|R,\theta_{G},\theta_{C},w_1,w_2)=w_1C_{R}^{Norm}(\mathbf{u}|R) + w_2C^{Gumbel}(\mathbf{u}|\theta_{G}) + w_3C^{Clayton}(\mathbf{u}|\theta_{C})$ where $w_1,w_2$ and $w_3=1-w_1-w_2$ are mixture weights. $C^{mix}$ can capture both lower and upper tail dependence.  Joe presents another technique called 'mixture of max-id'for creating closed form copulas from mixtures that exhibit flexibility in dependence, tail dependence and tail asymmetry [@joe_multivariate_1996]. 
  
  <!--
--Combinations/Comprehensive: mixtures of copulas are also copulas 
--Generating copulas?
+- Comprehensive: contains W,M, and independence copulas , e.g. Plackett (Nelsen 3.3.3), Frechet family (Nelsen ex 2.4)
+-Combinations: mixtures of copulas are also copulas 
+-Sampling/simulation
+-Generating copulas
 -->
 
 <!-- for more info about tables
@@ -206,7 +210,7 @@ tab1<-matrix(unlist(tab1_entries), byrow=FALSE, ncol=length(tab1_entries))
 
 <!-- include results='asis' ??-->
 
-```{r tab1, echo=FALSE, results='asis'}
+```{r tab1, eval=!knitr::is_html_output(), echo=FALSE, results='asis'}
 kable(tab1, booktabs = TRUE, escape=FALSE, caption = 'Common Copulas and their Properties',
              col.names = linebreak(c("Name","Class","Includes $M$ \nand $\\Pi$",
              "Symmetric","Tail Dependence","Closed-form \nCDF", "Closed-form \ndensity"),
@@ -296,6 +300,28 @@ Although we will focus on only a few of the many applications of copula modeling
 
 Copula models have been developed to analyze multivariate survival data, longitudinal and clustered data, or situations with both (so-called 'joint' models).
 
+
+
+* Dose-finding and optimal design
+
+Dose-Finding Based on Efficacy-Toxicity Trade-Offs
+@thall_dose-finding_2004
+
+Bayesian Dose Finding in Oncology for Drug Combinations by Copula Regression @yin_bayesian_2009
+
+Dose-Finding Based on Bivariate Efficacy-Toxicity Outcome Using Archimedean Copula  @tao_dose-finding_2013
+
+Evaluating the performance of copula models in phase I-II clinical trials under model misspecification
+@cunanan_evaluating_2014
+
+--> Optimal design
+Optimal design to discriminate between rival copula models for a bivariate binary response [@deldossi_optimal_2018]
+
+Design of experiments for bivariate binary responses modelled by Copula functions [@denman_design_2011]
+
+Optimal designs for copula models [@perrone_optimal_2016]
+
+
 * Survival outcomes
 
 Inferences on the Association Parameter in Copula Models for Bivariate Survival Data [@shih_inferences_1995]
@@ -338,9 +364,13 @@ A Parametric model for cluster correlated categorical data [@meester_parametric_
 
 Modeling Injury Severity of Multiple Occupants of Vehicles: Copula-Based Multivariate Approach [@eluru_modeling_2010]
 
+
+
 Surrogacy assessment using principal stratification and a Gaussian copula model
 @conlon_surrogacy_2017
 
+
+Bayesian adjusted R^2 for the meta-analytic evaluation of surrogate time-to-event endpoints in clinical trials [ref renfro]
 
 
 * Joint longitudinal/survival models
@@ -363,7 +393,11 @@ Bayesian model selection of Regular Vine Copulas [@gruber_bayesian_2017]
 
 * Other extensions:
 
-* Missing data??
+* Missing data
+
+Dissertation - Copula Regression Models for the Analysis of Correlated Data with Missing Values [@ding_copula_2015]
+
+Copula selection models for non-Gaussian outcomes that are missing not at random: Copula selection models for non-Normal data [@gomes_copula_2019]
 
 
 * Semi-parametric and non-parametric copulas - estimate copula form empirically

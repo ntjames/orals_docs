@@ -126,7 +126,8 @@ plot(rMvdc(500, mvd_gc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
 
 ```{r, eval=knitr::is_html_output(), fig.cap='Interactive plot for Figure \\@ref(fig:ex1-a)'}
 library(plotly)
-#https://plot.ly/r/3d-surface-plots/
+# https://plot.ly/r/3d-surface-plots/
+# https://plot.ly/r/reference/#surface
 
 # color scheme
 num_col <- 100
@@ -146,7 +147,7 @@ scene_opt <- list( xaxis = list(title = "Normal"), yaxis = list(title = "Gamma")
                  camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25)))
 
 # make plot
-#!NOTE: need to transpose z matrix output from contour() from to plot correctly
+# NOTE: need to transpose z matrix output from contour() from to plot correctly
 plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>% 
   add_surface(colors = col_sch, contours = cont_opt) %>%
   layout(scene = scene_opt)
@@ -154,7 +155,6 @@ plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>%
 
 
 ```{r ex1-b, fig.cap='Contour plots of multivariate density with standard Normal and Gamma(4,1) margins combined using a Clayton copula with $\\theta=\\frac{2}{3}$. The small scatterplot in the top right of each shows n=500 random draws from the multivariate density', fig.show = 'hold', fig.align='center', out.width='90%'}
-#! library(rgl)
 ## Example 1b
 
 # define Clayton copula
@@ -192,14 +192,13 @@ plot(rMvdc(500, mvd_cc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
 ```{r, eval=knitr::is_html_output(), fig.cap='Interactive plot for Figure \\@ref(fig:ex1-b)'}
 
 # make plot
-#! need to transpose z matrix output from contour() from to plot correctly
+# NOTE: need to transpose z matrix output from contour() from to plot correctly
 plot_ly(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z)) %>% 
   add_surface(colors = col_sch, contours = cont_opt) %>%
   layout(scene = scene_opt)
 ```
 
-
-```{r, eval=FALSE, fig.cap='wireframe', fig.show = 'hold', fig.align='center', out.width='48%'}
+```{r, eval=FALSE, echo=FALSE, fig.cap='wireframe', fig.show = 'hold', fig.align='center', out.width='48%'}
 
 par(op)
 wireframe2(mvd_gc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 

@@ -1,30 +1,13 @@
 
 # Applications
 
-[2 main examples, can also provide smaller examples and summaries]
+<!--
+2 main examples, can also provide smaller examples and summaries
+-->
 
-Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've laid the groundwork by discussing copula theory, we can see how these models are used in practice.
+Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've reviewed some basic copula theory, we can see how these models are used in practice.
 
-## Dose-finding
-
-[pick one as main ex.]
-
-Dose-Finding Based on Efficacy-Toxicity Trade-Offs
-@thall_dose-finding_2004
-
-Bayesian Dose Finding in Oncology for Drug Combinations by Copula Regression @yin_bayesian_2009
-
-Dose-Finding Based on Bivariate Efficacy-Toxicity Outcome Using Archimedean Copula @tao_dose-finding_2013
-
-Evaluating the performance of copula models in phase I-II clinical trials under model misspecification
-@cunanan_evaluating_2014
-
-### Optimal design
-Optimal design to discriminate between rival copula models for a bivariate binary response [@deldossi_optimal_2018]
-
-Design of experiments for bivariate binary responses modelled by Copula functions [@denman_design_2011]
-
-Optimal designs for copula models [@perrone_optimal_2016]
+<!-- find a more distinct application from list on previous page for first example -->
 
 ## Benefit-Risk
 
@@ -34,18 +17,82 @@ Bayesian Joint Modelling of Benefit and Bisk in Drug Development
 The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future Directions
 [@costa_case_2017]
 
+## Longitudinal Data or Clustered Data
 
-## Other Applications
+Use Meester example and code from Yan and/or Hofert book?
 
-### Composite outcomes vs joint marginal analyses
 
-Properties of composite time to first event versus joint marginal analyses of multiple outcomes
-[@bebu_properties_2018]
+Joint Regression Analysis of Correlated Data Using Gaussian Copulas [add song, li, yuan 2009 ref]
 
-### Surrogacy assessment using principal stratification
+example 2 - joint analysis of longitudinal trial data
 
-Surrogacy assessment using principal stratification and a Gaussian copula model
-@conlon_surrogacy_2017
+use davis7.dat from Springer Website for Davis textbook "Statistical Methods for the Analysis of Repeated Measurements" https://www.springer.com/us/book/9780387953700
+
+use package gcmr?
+
+```{r}
+library(gcmr)
+# https://cran.r-project.org/web/packages/gcmr/index.html
+
+in_dir <- getwd()
+# read in data
+ms_dat0 <- read.table(file.path(in_dir,"DAVIS7.DAT"), header=FALSE,
+                     col.names = c("id","trt","wk2_chg","wk4_chg","wk6_chg"),
+                     stringsAsFactors = FALSE)
+
+if (.Platform$OS.type=="unix") ms_dat0 <- ms_dat0[1:80,]
+
+# reshape to long
+ms_dat <- reshape(ms_dat0, varying = list(3:5), v.names ="chg_bl", 
+                  timevar = "visit", direction="long")
+
+# recode and sort
+ms_dat$response <- factor( as.numeric(ms_dat$chg_bl)>0 )
+
+ms_dat$response[is.na(ms_dat$response)]<-TRUE # try replacing NA with FALSE??
+
+ms_dat$trt <- factor(ms_dat$trt, levels=c("Placebo","Fampridine"))
+ms_dat<-ms_dat[order(ms_dat$id,ms_dat$visit),]
+
+ms_dat
+
+# model crashes/hangs R
+if(0){
+fit<-gcmr(response ~ trt + visit, data = ms_dat, 
+     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"))
+  
+fit<-gcmr(response ~ trt + visit, data = ms_dat, 
+     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
+     options=gcmr.options(seed=717, nrep=100))
+
+  
+fit<-gcmr(response ~ trt + visit, data = ms_dat, 
+     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
+     options=gcmr.options(seed=717, nrep=100, method="CG"))
+}
+
+# works with missing removed, but inferences don't match paper
+fit<-gcmr(response ~ trt + visit, data = ms_dat, 
+     subset = (!is.na(ms_dat$response)),
+     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
+     options=gcmr.options(seed=717, nrep=1000))
+
+summary(fit)
+
+# do GEE to compare to paper
+
+
+
+#data(epilepsy)
+#exfit<-gcmr(counts ~ offset(log(time)) + visit + trt + visit:trt, data = epilepsy,subset = (id != 49), marginal = negbin.marg, cormat = cluster.cormat(id, "ar1"),options=gcmr.options(seed=123, nrep=100 ))
+```
+
+
+
+<!--
+Properties of composite time to first event versus joint marginal analyses of multiple outcomes [@bebu_properties_2018] - This paper doesn't use copulas, assumes joint exp model
+-->
+
 
 <!--
 case-control/paired study??
