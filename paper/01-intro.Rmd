@@ -124,73 +124,37 @@ plot(rMvdc(500, mvd_gc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
 #1 - pMvdc(c(1, 1000),mvd_gc) - pMvdc(c(1000, 4),mvd_gc) + pMvdc(c(1, 4),mvd_gc)
 ```
 
-```{r, eval=FALSE, fig.cap='Interactive plot for Figure \\@ref(fig:ex1-a)'}
-library(rgl)
-#!y1<-seq(xl[1]-1,xl[2]+1,length=75)
-#!y2<-seq(yl[1]-1,yl[2]+1,length=75)
-#!gc_z<-outer(y1,y2,FUN=function(a,b) dMvdc(matrix(c(a,b),nrow=75^2),mvd_gc))
-
-# color scheme
-num_col<-100
-col_sch <- rev(rainbow(num_col, start = 0/6, end = 4/6))
-
-gc_zcol <- cut(gc_comps$z, num_col)
-
-plotid1<-persp3d(gc_comps$x,gc_comps$y,gc_comps$z, col=col_sch[gc_zcol],
-                 xlab="Normal", ylab="Gamma", zlab="")
-
-#gc_zcol <- cut(gc_z, num_col)
-
-#plotid1<-persp3d(y1,y2,gc_z, col=col_sch[gc_zcol],
-#                 xlab="Normal", ylab="Gamma", zlab="")
-
-fn<-spin3d(axis = c(0, 0, 1), rpm = 6) # spin function
-
-rglwidget(elementId = "plot3d_mvd_gc") %>% 
-  playwidget(par3dinterpControl(fn, 0, 10, steps=25),
-       step = 0.1, loop = TRUE, rate = 0.75,
-       components=c("Play","Slower","Faster","Reset","Slider"))
-
-```
-
 ```{r, eval=knitr::is_html_output(), fig.cap='Interactive plot for Figure \\@ref(fig:ex1-a)'}
 library(plotly)
 #https://plot.ly/r/3d-surface-plots/
 
-#!y1<-seq(xl[1]-1,xl[2]+1,length=75)
-#!y2<-seq(yl[1]-1,yl[2]+1,length=75)
-#!gc_z<-outer(y1,y2,FUN=function(a,b) dMvdc(matrix(c(a,b),nrow=75^2),mvd_gc))
-
-#!contour(gc_comps$x,gc_comps$y,gc_comps$z)
-
 # color scheme
-num_col<-100
+num_col <- 100
 col_sch <- rev(rainbow(num_col, start = 0/6, end = 4/6))
 
-#! need to transpose z matrix output from contour() from to plot correctly
-plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>% 
-  add_surface(colors=col_sch,
-              contours = list(
-                      x = list(show=FALSE, usecolormap=FALSE,
-                      project=list(x=TRUE,y=FALSE,z=FALSE)),
-                      y = list(show=FALSE, usecolormap=FALSE,
-                      project=list(x=FALSE,y=TRUE,z=FALSE)) )) %>%
-  layout(scene = list(
-                 xaxis = list(title = "Normal"),
-                 yaxis = list(title = "Gamma"),
+# plot options
+
+# contours
+cont_opt <- list(x = list(show=FALSE, usecolormap=FALSE,
+                          project=list(x=TRUE,y=FALSE,z=FALSE)),
+                y = list(show=FALSE, usecolormap=FALSE,
+                      project=list(x=FALSE,y=TRUE,z=FALSE)) )
+
+#labels and 'camera' angle
+scene_opt <- list( xaxis = list(title = "Normal"), yaxis = list(title = "Gamma"),
                  zaxis = list(title = "density"),
-                 camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25))
-                 ))
+                 camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25)))
 
-
-      #                highlightcolor="#ff0000",
-
-#scene = list(camera = list(eye = list(x = -1.25, y = 1.25, z = 1.25)))
+# make plot
+#!NOTE: need to transpose z matrix output from contour() from to plot correctly
+plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>% 
+  add_surface(colors = col_sch, contours = cont_opt) %>%
+  layout(scene = scene_opt)
 ```
 
 
 ```{r ex1-b, fig.cap='Contour plots of multivariate density with standard Normal and Gamma(4,1) margins combined using a Clayton copula with $\\theta=\\frac{2}{3}$. The small scatterplot in the top right of each shows n=500 random draws from the multivariate density', fig.show = 'hold', fig.align='center', out.width='90%'}
-library(rgl)
+#! library(rgl)
 ## Example 1b
 
 # define Clayton copula
@@ -225,43 +189,14 @@ plot(rMvdc(500, mvd_cc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
 
 ```
 
-```{r, eval=FALSE, fig.cap='Interactive plot for Figure \\@ref(fig:ex1-b)'}
-cc_z<-outer(y1,y2,FUN=function(a,b) dMvdc(matrix(c(a,b),nrow=75^2),mvd_cc))
-
-cc_zcol <- cut(cc_z, num_col)
-
-plotid2<-persp3d(y1,y2,cc_z, col=col_sch[cc_zcol],
-                 xlab="Normal", ylab="Gamma", zlab="")
-
-fn<-spin3d(axis = c(0, 0, 1), rpm = 6) # spin function
-
-rglwidget(elementId = "plot3d_mvd_cc") %>% 
-  playwidget(par3dinterpControl(fn, 0, 10, steps=25),
-       step = 0.1, loop = TRUE, rate = 0.75,
-       components=c("Play","Slower","Faster","Reset","Slider"))
-
-```
-
 ```{r, eval=knitr::is_html_output(), fig.cap='Interactive plot for Figure \\@ref(fig:ex1-b)'}
 
-
+# make plot
 #! need to transpose z matrix output from contour() from to plot correctly
 plot_ly(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z)) %>% 
-  add_surface(colors=col_sch,
-              contours = list(
-                      x = list(show=FALSE, usecolormap=FALSE,
-                      project=list(x=TRUE,y=FALSE,z=FALSE)),
-                      y = list(show=FALSE, usecolormap=FALSE,
-                      project=list(x=FALSE,y=TRUE,z=FALSE)) )) %>%
-  layout(scene = list(
-                 xaxis = list(title = "Normal"),
-                 yaxis = list(title = "Gamma"),
-                 zaxis = list(title = "density"),
-                 camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25))
-                 ))
-
+  add_surface(colors = col_sch, contours = cont_opt) %>%
+  layout(scene = scene_opt)
 ```
-
 
 
 ```{r, eval=FALSE, fig.cap='wireframe', fig.show = 'hold', fig.align='center', out.width='48%'}
@@ -272,9 +207,6 @@ wireframe2(mvd_gc, dMvdc, n.grid=40, xlim=xl, ylim=yl,
 
 wireframe2(mvd_cc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 
       xlab="Normal", ylab="Gamma", zlab="", zoom=0.8)
-
-#      par.settings = list(box.3d = list(col=c(1,2,3,4,5,6,7,8,9),
-#                                        lty=c(1,1,2,2,1,2,1,1,1) )) 
 ```
 
 A distinct benefit of the copula approach is this ability to separate the specification of the marginal univariate models from the specification of the copula model, which contains information about the dependence between the outcomes. This modular approach to specifying the joint model provides increased flexibility by first choosing models well suited for each outcome and then plugging these margins into a copula model that has the desired dependence structure.
