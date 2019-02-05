@@ -1,13 +1,33 @@
 
-# Conclusion
+# Discussion and Future Research
 
 Copula models have wide applicability to questions in clinical trials for which correctly accounting for dependence between multiple outcomes is important to answer the underlying scientific questions.
 
+
+<!-- need to outline potential avenues for future research -->
+
 Copula models using a Bayesian paradigm have been fairly well explored in the context of early phase dose finding trials, but their application has been limited for other clinical trial settings in which Bayesian modeling may be advantageous. 
 For example, adaptive trials, sharing information on historical controls or between populations (ped vs adult, different countries or regions) [commensurate priors]
+
+... can include information from a range of sources including previous related studies, pre-clinical models, elicited clinical expertise, or observational data sources, although these extensions have not been well explored in the context of copula models.
+
+
 
 Even if the dependence structure is not of interest, evidence of improvement in marginal inferences by borrowing information from the other margins through the dependence structure in the copula. [FIND citation and prelim code to support this!]
 
 - check de Leon & Zhu ANOVA extensions for mixed discrete and continuous data cited in de Leon
 - check He et al. a framework for joint modeling and joint assessment of efficacy and safety endpoints for probability of success evaluatin and optinal dose selection
 - check Cunanan & Koopmeiners Evaluating the performance of copula models in phase I-II clinical trials under model misspecification
+
+<!-- for platform designs/adaptive are changes based on efficacy and safety?? -->
+
+<!-- bootstrap copulas -->
+
+Computational - although many software resources exist for estimation and manipulation of basic unconditional copulas (R `copula` package, Python package copulas https://pypi.org/project/copulas/ and pycopula https://maximejumelle.github.io/pycopula/build/html/, MATLAB copula functions in Statistics and Machine Learning Toolbox and Multivariate Copula Analysis Toolbox (doi:10.1002/2016WR020242), SAS PROC COPULA) there is a lack of software to perform general purpose copula regression modeling which barrier to wider adoption and exploration of these models.
+
+
+
+especially true in software for Bayesian analysis where 
+
+use autodifferentiation [ref Baydin]
+

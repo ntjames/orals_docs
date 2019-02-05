@@ -12,29 +12,9 @@ basic problem should be stated as clearly as possible - to answer questions abou
 need to add more after clinical paper review, esp. Costa et al and dose-finding example
 -->
 
-Randomized clinical trials are considered the gold standard for evaluating a medical intervention and often involve multiple endpoints or outcomes [cite]. For example, in early phase trials interest may lie in the effect of dose on both efficacy and toxicity endpoints simultaneously. Similarly, later phase confirmatory trials may seek to quantify the risk-benefit tradeoffs of a potential treatment. Further, many studies are designed to measure the effects of the intervention on a group of several co-primary outcomes representing different dimensions of the underlying disease @evans_fundamental_2016, and most trials collect data on multiple types of adverse events. For longitudinal or repeated measures data, measurements of a single outcome variable for a trial participant at different times can be considered to be multivariate outcomes. 
+Randomized clinical trials are considered the gold standard for evaluating a medical intervention and often involve multiple endpoints or outcomes [@friedman_fundamentals_2015; @evans_fundamental_2016]. For example, in early phase trials interest may lie in the effect of dose on both efficacy and toxicity endpoints simultaneously. Similarly, phase III confirmatory trials may seek to quantify the risk-benefit tradeoffs of a potential treatment. Further, many studies are designed to measure the effects of the intervention on a group of several co-primary outcomes representing different dimensions of the underlying disease, and most trials collect data on multiple types of adverse events. For longitudinal or repeated measures data, measurements of a single outcome variable for a participant across time can be considered to be multivariate outcomes. In the same way, data from constituent parts of a body system, such as bilateral eye data or ear data, are also multivariate. Trials collecting both surrogate and true endpoints offer yet another example. A cluster randomized trial collects data from participants in groups that share a common characteristic such as study center or familial relationship. Here, the dependence within groups rather than within individuals is important. The distinguishing trait in of all these situation is that multiple outcomes are observed within a sampling unit and this clustering induces a dependence between the separate outcome measures.
 
-In the same way, data from multiple constituent elements of a body system, such as bilateral eye data, ear data, or (bilateral limb function data? something related to studies Dr. Self or Archer have done)
-
-A cluster randomized trial collects data from participants in groups that share a common characteristic such as study center or familial relationship  [@wu_gaussian_2014]
-
-Trials collecting both surrogate and true endpoints offer yet another example [for example molenberghs et al 2001 ref]
-
-The distinguishing trait in of all these situation is that multiple outcomes are observed within each individual or sampling unit and this clustering induces a dependence between the separate outcome measures.
-
-
-properly accounting for this dependence is a main motivation for joint models
-
-In these situations it is common to perform a separate analysis for each of the outcomes, but modeling the multiple outcomes together in a single joint model has several advantages. First, a joint model allows the investigator to answer specific questions involving combinations of outcomes, e.g. "What is the posterior probability that either the intervention has a specified level of effectiveness *or* the risk of adverse events is low?" or "Is the intervention efficacious for three co-primary endpoints simultaneously?" These questions can only be correctly answered by incorporating the dependence between the outcomes.
-
-3 separate analyses could answer "does drug improve symptom A?", "does drug improve symptom B?", and "does drug improve symptom C?" but not "does drug improve all 3 symptoms for a participant?"
-
-?? probability the rate of safety event 1 is less than the rate of safety event 2
-
-In addition to allowing the investigator to answer questions regarding the outcomes, the dependence may be of interest in its own right. A benefit-risk analysis asks the question "How strong is the relationship between the efficacy outcome and the safety outcome?" Comparing two drugs with identical efficacy and safety on average, the one with a weaker relationship between efficacy and safety will be preferred. 
-
-
-Understanding the relationship between outcomes provides a more complete picture of how the intervention works in multiple dimensions. 
+In many of these situations it is common to perform a separate analysis for each outcome, but modeling the multiple outcomes together in a single joint model has several advantages. First, a joint model allows the investigator to answer questions involving combinations of outcomes, e.g. "What is the posterior probability that either the intervention has a specified level of effectiveness *or* the risk of adverse events is low?" or "Is the intervention efficacious for three co-primary endpoints simultaneously?" To answer questions about multiple outcomes, you need a model that accounts for the dependence between these outcomes. The dependence may also be of interest in its own right. A benefit-risk analysis asks the question, "How strong is the relationship between the efficacy outcome and the safety outcome?" Comparing two drugs with identical efficacy and safety on average, the one with a weaker positive relationship between efficacy and safety will be preferred. Understanding the relationship between outcomes jointly provides a more complete picture of how the intervention works in multiple dimensions.
 
 <!-- check this
 Joint modeling can also avoid issues related to multiple testing since they lead to the use of simultaneous tests of joint model parameters rather than separate individual tests.
@@ -43,27 +23,29 @@ De Leon describes increased power and better control of Type I error by using [f
 -->
 
 <!-- scratch
+bilateral limb data?
+
+3 separate analyses could answer "does drug improve symptom A?", "does drug improve symptom B?", and "does drug improve symptom C?" but not "does drug improve all 3 symptoms for a participant?"
+
+?? probability the rate of safety event 1 is less than the rate of safety event 2
+
 P(Y_1>0,Y_2>0)
 P(A and B)
 P(A or B) = P(A) + P(B) - P(A and B)
 
-It also provides a better characterization of the relationship between outcomes and how this relationship is modified by the intervention. 
+It also provides a better characterization of the relationship between outcomes and how this relationship is modified by the intervention.
 
 and interest may lie in the how the intervention simultaneously affects all these outcomes.
-There are also situations where multiple efficacy or safety events 
+There are also situations where multiple efficacy or safety events
 These trials are often designed to determine the effect of the intervention on a single primary endpoint.
 
 Principle of beneficence means that benefits must outweigh the risks implying that all interventions must be evaluated for both efficacy and safety. Often the effect of treatment on efficacy and safety outcomes are explored with separate models for each type of outcome.
 
 Interplay between benefit and risk captured in dependence of variable measuring these
 
-quantify tradeoff between outcomes and answer questions involving combinations, i.e. probability that intervention is effective and risk of adverse events is low 
-
-[Other applications - surrogate variable analysis]
+quantify tradeoff between outcomes and answer questions involving combinations, i.e. probability that intervention is effective and risk of adverse events is low
 
 Rather than making a binary yes/no decision on whether a new treatment is effective, modeling multivariate outcomes allows the investigator to quantify efficacy along a gradient. i.e. what benefit can be achieved with a low, medium, or high risk of adverse event. What dose level provides the best balance of efficacy and toxicity
-
-applications at multiple phases - phase I/II dosing toxicity/efficacy, phase III benefit-risk, phase IV? adverse risk assessment]
 -->
 
 ## Copulas for Joint Modeling
@@ -72,13 +54,71 @@ applications at multiple phases - phase I/II dosing toxicity/efficacy, phase III
 Introduction to the copula approach to joint modeling
 -->
 
-Several strategies have been proposed for such joint models including classical multivariate regression, factorization models and frailty/random effects models [@teixeira-pinto_correlated_2009, other citations]. In this report I will focus on use of copulas for joint models.
+Several strategies for joint modeling have been proposed including classical multivariate Normal regression, frailty or random effects models, and quasi-likelihood/generalized estimating equations [@teixeira-pinto_correlated_2009; @de_leon_copula-based_2011]. Factorization models -- which partition the joint distribution for outcomes $Y_1$ and $Y_2$ into conditional and unconditional models $P(Y_1|Y_2)P(Y_2)$ or $P(Y_2|Y_1)P(Y_1)$ -- are another approach [@catalano_bivariate_1992; @cox_response_1992; @molenberghs_evaluation_2001; @olkin_multivariate_1961]. However, with these methods it is difficult to separate specification of the dependence structure from the specification of individual outcome models while still maintaining the usual interpretation for the individual model parameters.
 
-A copula (denoted $C$) is a distribution function that 'couples' separate univariate distributions together to create a single joint, multivariate distribution. A $d$-dimensional copula combines $d$ univariate distributions where $d$ is the number of univariate distributions to be combined. The result is another $d$-dimensional multivariate distribution (denoted $H$). A foundational 1959 article published by mathematician Abe Sklar [@sklar_fonctions_1959] gives the equation that relates the univariate distributions, $C$, and $H$. It also guarantees that if the univariate distributions are continuous $H$ is *unique*. The same theorem implies the converse; given $d$ univariate distributions and $H$ the equation can be used to construct a unique $C$.
+In contrast, this report explores an alternative approach involving multivariate functions called *copulas*. Using copulas allows specification of completely different models well suited for each outcome while also accounting for the relationship between outcomes through a separate dependence model. Crucially, each individual outcome model maintains the same interpretation regardless of the dependence model. This modular approach to specifying the joint model provides increased flexibility and insight into the dependence structure. In many cases, copulas can be considered generalizations or extensions of the other joint modeling approaches.
 
-As a motivating example, consider two univariate continuous random variables $Y_1 \sim \text{Normal}(0,1)$ and $Y_2 \sim \text{Gamma}(4,1)$ representing efficacy response and adverse event rate, respectively. Figure \@ref(fig:ex1-a) shows the bivariate $H$ distribution constructed using the distributions of $Y_1$ and $Y_2$ and a Gumbel copula $C(u,v)=\exp[-((-\log u)^\theta +(-\log v)^\theta)^{1/\theta}]$ with $\theta=1\frac{1}{3}$. The individual univariate distributions are shown along the top and right margins while the main contour plot shows the bivariate distribution. The subplot in the upper right has $n=500$ draws from the bivariate distribution. Contrast this with figure \@ref(fig:ex1-b) which is constructed using the identical margins with a Clayton copula $C(u,v)=\max\{u^{-\theta} + v^{-\theta}-1,0\}^{-1/\theta}$ with $\theta=\frac{2}{3}$. The values of the copula parameter $\theta$ were chosen to correspond to Kendall's $\tau=0.25$ for both distributions. These plots verify that the same margins can produce different dependence patterns and the dependence information is contained in the selected copula. Intuitively, this means the interpretation of the margins is the same regardless of the dependence structure. An analysis which only considered each outcome separately under would yield identical results under either scenario. For example, $Pr(\text{efficacy}>0)=0.5$ for both. The probability of the combined event "$\text{efficacy}>1$ and $\text{AE rate}>4$" is 0.112 for the distribution constructed using the Gumbel copula and 0.094 for the distribution constructed using the Clayton copula.
+<!--
+Other joint modeling approaches
 
-```{r ex1-a, fig.cap='Contour plot of bivariate density with standard Normal and Gamma(4,1) margins combined using a Gumbel copula with $\\theta=1\\frac{1}{3}$. The small scatterplot in the top right of each shows n=500 random draws from the multivariate density', fig.show = 'hold', fig.align='center', out.width='90%'}
+Contrast to other joint modelling approaches pointing out similarities, equivalences, differences
+
+See section 1.6 in Joe textbook
+
+for refs check @teixeira-pinto_correlated_2009 and @de_leon_copula-based_2011
+need more refs in general bivariate data (not mixed outcomes)
+
+sort in historical order and structure chronologically from most assumptions/restrictions to increasing relaxation, describing limitations with each model
+
+The oldest methods for exploring are multivariate Normal which was studied by
+
+In [Year], factorized models
+
+Random effects or frailty models
+
+Liang and Zeger introduced the GEE approach
+-->
+
+<!--
+* Multivariate regression - multivariate Normal, multivariate student-t
+
+[some other MV dists, see Joe p2-4]
+
+* Factorized models - for outcomes $Y_1$ and $Y_2$ model $P(Y_1|Y_2)P(Y_2)$ or $P(Y_2|Y_1)P(Y_1)$
+
+[@catalano_bivariate_1992; @cox_response_1992; @molenberghs_evaluation_2001; @olkin_multivariate_1961]
+
+
+* Random effects/Frailty
+
+ bivariate Survival Models induced by frailties [@oakes_bivariate_1989]
+
+* GEE/quasi likelihood
+
+[@liang_longitudinal_1986]
+
+[@fitzmaurice_regression_1995] - uses location model and GEE model
+
+For many other multivariate approaches the joint model or dependence structure determines the form of the univariate margins as well. Limitations in available number of parametric multivariate distributions and dependence that can be modeled with them.
+
+Copulas can be considered generalizations or extensions of several of these approaches.
+
+A copula-based formulation of multivariate normal and multivariate Student-$t$ regression can be produced by specifying the appropriate marginal and copula models, so these models can be seen as a special case of joint copula models.
+
+Similarly frailty models have a copula model representation
+
+that the form of the joint model or dependence structure determines the form of the univariate margins as well.
+
+Limitations in available number of parametric multivariate distributions and dependence that can be modeled with them.
+
+A distinct benefit of the copula approach is the ability to separate the specification of the marginal univariate models from the specification of the copula model, which contains information about the dependence between the outcomes.
+-->
+
+A copula (denoted $C$) is a distribution function that 'couples' separate univariate distributions together to create a single joint, multivariate distribution. A $d$-dimensional copula combines $d$ univariate distributions where $d$ is the number of univariate distributions to be combined. The result is another $d$-dimensional multivariate distribution (denoted $H$).
+
+As a motivating example, consider two univariate continuous random variables $Y_1 \sim \text{Normal}(0,1)$ and $Y_2 \sim \text{Gamma}(4,1)$ representing univariate models for efficacy response and adverse event rate, respectively. Figure \@ref(fig:ex1-a) shows the bivariate $H$ distribution constructed using the distributions of $Y_1$ and $Y_2$ and a Gumbel copula $C(u,v)=\exp[-((-\log u)^\theta +(-\log v)^\theta)^{1/\theta}]$ with $\theta=1\frac{1}{3}$. The individual univariate distributions are shown along the top and right margins while the main contour plot shows the bivariate distribution. Contrast this with figure \@ref(fig:ex1-b) which is constructed using identical univariate distributions with a Clayton copula $C(u,v)=\max\{u^{-\theta} + v^{-\theta}-1,0\}^{-1/\theta}$ with $\theta=\frac{2}{3}$. The values of the copula parameter $\theta$ were chosen to correspond to Kendall's $\tau=0.25$ for both distributions. These plots suggest that the same margins can produce different dependence patterns and the dependence information is contained in the selected copula. Intuitively, this means the interpretation of the margins is the same regardless of the dependence structure. An analysis which considered each outcome separately would yield identical results under either scenario. For example, $Pr(\text{efficacy}>0)=0.5$ for both. However, to answer a question related to both outcomes we must account for the dependence structure. The probability of the combined event "$\text{efficacy}>1$ and $\text{AE rate}>4$" is 0.112 for the distribution constructed using the Gumbel copula and 0.094 for the distribution constructed using the Clayton copula.
+
+```{r ex1-a, cache=TRUE, fig.cap='Contour plot of bivariate density with standard Normal and Gamma(4,1) margins combined using a Gumbel copula with $\\theta=1\\frac{1}{3}$', fig.show = 'hold', fig.align='center', out.width='90%'}
 ## Example 1a
 
 # set Kendall's tau
@@ -97,11 +137,11 @@ mvd_gc <- mvdc(copula = gc, margins = marg, paramMargins = marg_params)
 # plotting parameters
 color2 <- rev(rainbow(11, start = 0/6, end = 4/6))
 xl <- c(-4,4)
-yl <- c(-0.5,8.5)
+yl <- c(-0.5,9)
 
 # Gumbel copula
 op<-par(fig=c(0,0.75,0,0.75))
-gc_comps <-contour(mvd_gc, dMvdc, xlim=xl, ylim=yl, n.grid=50,
+gc_comps <- contour(mvd_gc, dMvdc, xlim=xl, ylim=yl, n.grid=50,
       xlab=bquote(Y[1]~~(Normal)), ylab=bquote(Y[2]~~('Gamma')),
       col=color2, bty="n")
 
@@ -113,11 +153,12 @@ x_seq<-seq(0,yl[2],length=100)
 y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
 plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n")
 
+# scatter plot (NOT shown)
+if (0){
 par(fig=c(0.6,0.9,0.45,1),new=TRUE)
 plot(rMvdc(500, mvd_gc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
      pch='.', col=rgb(0,0,0,0.6))
-
-#mtext("Gumbel", side=3, outer=TRUE, line=-3.5) 
+}
 
 # probability of joint event
 #P(y1>1,y2>4) = 1- P(y1<1,y2<inf) - P(y1<inf,y2<4) + P(y1<1,y2<4)
@@ -133,28 +174,25 @@ library(plotly)
 num_col <- 100
 col_sch <- rev(rainbow(num_col, start = 0/6, end = 4/6))
 
-# plot options
-
-# contours
+# contours options
 cont_opt <- list(x = list(show=FALSE, usecolormap=FALSE,
                           project=list(x=TRUE,y=FALSE,z=FALSE)),
-                y = list(show=FALSE, usecolormap=FALSE,
+                 y = list(show=FALSE, usecolormap=FALSE,
                       project=list(x=FALSE,y=TRUE,z=FALSE)) )
 
-#labels and 'camera' angle
+#labels and 'camera' angle options
 scene_opt <- list( xaxis = list(title = "Normal"), yaxis = list(title = "Gamma"),
                  zaxis = list(title = "density"),
                  camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25)))
 
 # make plot
 # NOTE: need to transpose z matrix output from contour() from to plot correctly
-plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>% 
+plot_ly(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z)) %>%
   add_surface(colors = col_sch, contours = cont_opt) %>%
   layout(scene = scene_opt)
 ```
 
-
-```{r ex1-b, fig.cap='Contour plots of multivariate density with standard Normal and Gamma(4,1) margins combined using a Clayton copula with $\\theta=\\frac{2}{3}$. The small scatterplot in the top right of each shows n=500 random draws from the multivariate density', fig.show = 'hold', fig.align='center', out.width='90%'}
+```{r ex1-b, cache=TRUE, fig.cap='Contour plots of multivariate density with standard Normal and Gamma(4,1) margins combined using a Clayton copula with $\\theta=\\frac{2}{3}$', fig.show = 'hold', fig.align='center', out.width='90%'}
 ## Example 1b
 
 # define Clayton copula
@@ -177,11 +215,12 @@ x_seq<-seq(0,yl[2],length=100)
 y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
 plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n")
 
+# scatter plot (NOT shown)
+if (0){
 par(fig=c(0.6,0.9,0.45,1),new=TRUE)
 plot(rMvdc(500, mvd_cc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
      pch='.', col=rgb(0,0,0,0.6))
-
-#mtext("Clayton", side=3, outer=TRUE, line=-3.5) 
+}
 
 # probability of joint event
 #P(y1>1,y2>4) = 1- P(y1<1,y2<inf) - P(y1<inf,y2<4) + P(y1<1,y2<4)
@@ -193,7 +232,7 @@ plot(rMvdc(500, mvd_cc), xlim=xl, ylim=yl, xlab="",ylab="", bty="n",
 
 # make plot
 # NOTE: need to transpose z matrix output from contour() from to plot correctly
-plot_ly(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z)) %>% 
+plot_ly(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z)) %>%
   add_surface(colors = col_sch, contours = cont_opt) %>%
   layout(scene = scene_opt)
 ```
@@ -201,20 +240,18 @@ plot_ly(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z)) %>%
 ```{r, eval=FALSE, echo=FALSE, fig.cap='wireframe', fig.show = 'hold', fig.align='center', out.width='48%'}
 
 par(op)
-wireframe2(mvd_gc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 
+wireframe2(mvd_gc, dMvdc, n.grid=40, xlim=xl, ylim=yl,
       xlab="Normal", ylab="Gamma", zlab="", zoom=0.8)
 
-wireframe2(mvd_cc, dMvdc, n.grid=40, xlim=xl, ylim=yl, 
+wireframe2(mvd_cc, dMvdc, n.grid=40, xlim=xl, ylim=yl,
       xlab="Normal", ylab="Gamma", zlab="", zoom=0.8)
 ```
-
-A distinct benefit of the copula approach is this ability to separate the specification of the marginal univariate models from the specification of the copula model, which contains information about the dependence between the outcomes. This modular approach to specifying the joint model provides increased flexibility by first choosing models well suited for each outcome and then plugging these margins into a copula model that has the desired dependence structure.
 
 
 <!--
 Y_{tox}=\beta_{tox0} + \beta_{tox1} X_{dose} \quad Y_{eff}=\beta_{eff0} + \beta_{eff1} X_{dose}
 
-A univariate regression model is used to explain the relationship between a single outcome and treatment. 2 outcomes = 2 separate univariate regression models 
+A univariate regression model is used to explain the relationship between a single outcome and treatment. 2 outcomes = 2 separate univariate regression models
 
 [After explaining idea, try adding 'in other words ...' to get different take]
 -->
@@ -227,75 +264,16 @@ knitr::include_graphics(file.path(wd,"fig","placeholder.jpg"))
 ```
 -->
 
-### Other joint modeling approaches
 
-<!--
-Contrast to other joint modelling approaches pointing out similarities, equivalences, differences
-
-See section 1.6 in Joe textbook
--->
-
-In addition to copulas, many other approaches to joint modeling have been proposed
-
-<!--
-for refs check @teixeira-pinto_correlated_2009 and @de_leon_copula-based_2011
-need more refs in general bivariate data (not mixed outcomes)
-
-sort in historical order and structure chronologically from most assumptions/restrictions to increasing relaxation, describing limitations with each model
-
-The oldest methods for exploring are multivariate Normal which was studied by
-
-In [Year], factorized models
-
-Random effects or frailty models
-
-Liang and Zeger introduced the GEE approach
--->
-
-* Multivariate regression - multivariate Normal, multivariate student-t
-
-
-
-* Factorized models - for outcomes $Y_1$ and $Y_2$ model $P(Y_1|Y_2)P(Y_2)$ or $P(Y_2|Y_1)P(Y_1)$
-
-[@catalano_bivariate_1992; @cox_response_1992; @molenberghs_evaluation_2001; @olkin_multivariate_1961]
-
-
-* Random effects/Frailty
-
---> bivariate Survival Models induced by frailties [@oakes_bivariate_1989]
-
-* GEE/quasi likelihood  add original GEE paper??
-
-[@liang_longitudinal_1986]
-
-[@fitzmaurice_regression_1995] - uses location model and GEE model 
-
-
-
-For many other multivariate approaches the joint model or dependence structure determines the form of the univariate margins as well. Limitations in available number of parametric multivariate distributions and dependence that can be modeled with them.
-
-Copulas can be considered generalizations or extensions of several of these approaches. 
-
-A copula-based formulation of multivariate normal and multivariate Student-$t$ regression can be produced by specifying the appropriate marginal and copula models, so these models can be seen as a special case of joint copula models.
-
-Similarly frailty models have a copula model representation
-
-## Applications
+## Applications 
 
 <!--
 Introduce specific examples in clinical trials where copula models are used
 -->
 
-While there is an extensive literature on copula modeling in fields such as [], their use in clinical trials has been relatively limited compared to other joint modeling approaches described in the previous section.
+While there is an extensive literature on copula modeling in fields such as finance, insurance, and meteorology [@cherubini_copula_2004; @fermanian_statistical_2004; @ibragimov_heavy_2017; @joe_dependence_2015], applications in clinical trials have been relatively limited compared to other joint modeling approaches described in the previous section. <!-- [provide super-rough estimate based on pubmed? clinical trials.gov??] A recent PubMed search for the term "clinical trial" yielded over 675,000 results while "copula" produced only 733 and only 22 results were found for '"clinical trial" AND "copula"'.-->  We briefly describe the background for two such applications which will be examined in more detail in the [Applications](#app) section. Costa and Drury [@costa_bayesian_2018] considered the use of copula models in joint benefit-risk analysis. The goal is to provide a quantiative display of the tradeoff between efficacy and safety which can be used by study sponsors or regulators for decision-making. The methodological framework is Bayesian so results are presented in terms of the joint posterior probability distribution. We explore their first simulation study, involving a continuous efficacy outcome and a binary safety outcome in a two-arm parallel design. Meester and MacKay [@meester_parametric_1994] analyze data from a randomized clinical trial comparing two antibiotics for treatment of otitis media with effusion (OME), an inflammatory disease of the middle ear. Children in the study with either unilateral or bilateral OME were randomized to one of the two antibiotic groups. Cure status (yes/no) for each affected ear after two weeks of treatment was recorded. The outcomes were either univariate binary, for children with unilateral OME, or bivariate binary, for children with bilateral OME. Additionally, the investigators were interested in the effect of age on recovery and possible interaction between age and treatment effect.
 
-### Dose-finding
-
-Several dose-finding models using copulas to model toxicity and efficacy have been developed. We will consider [1-3?] such designs
-
-### Risk-benefit
-
-Costa et al. [@costa_bayesian_2018] considered the use of copula models in joint risk-benefit analysis. They present results from several simulations as well as an analysis
-of a trial related to new-onset type 1 diabetes. [Provide description of the study, data, outcomes] The motivating question for this study was [] 
-
-
+<!--
+They present results from several simulations as well as an analysis
+of a trial related to new-onset type 1 diabetes. [Provide description of the study, data, outcomes] The motivating question for this study was []
+-->

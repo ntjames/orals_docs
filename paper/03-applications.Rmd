@@ -1,9 +1,11 @@
 
-# Applications
+# Applications {#app}
 
 <!--
 2 main examples, can also provide smaller examples and summaries
 -->
+
+
 
 Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've reviewed some basic copula theory, we can see how these models are used in practice.
 
@@ -17,11 +19,51 @@ Bayesian Joint Modelling of Benefit and Bisk in Drug Development
 The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future Directions
 [@costa_case_2017]
 
-## Longitudinal Data or Clustered Data
+
+The R package `rstan` [@stan_development_team_rstan:_2018] was used to fit the Bayesian 
+
+
+```{r br-a}
+## Benefit-Risk application 
+
+```
+
+```{r br-b}
+
+```
+
+```{r br-c}
+
+```
+
+
+
+<!--
+
+-Dose-Finding Based on Efficacy-Toxicity Trade-Offs [@thall_dose-finding_2004]
+
+-Bayesian Dose Finding in Oncology for Drug Combinations by Copula Regression [@yin_bayesian_2009]
+
+-Dose-Finding Based on Bivariate Efficacy-Toxicity Outcome Using Archimedean Copula [@tao_dose-finding_2013] 
+
+-Evaluating the performance of copula models in phase I-II clinical trials under model misspecification [@cunanan_evaluating_2014]
+
+-Optimal design to discriminate between rival copula models for a bivariate binary response [@deldossi_optimal_2018]
+
+-Design of experiments for bivariate binary responses modelled by Copula functions [@denman_design_2011]
+
+-Optimal designs for copula models [@perrone_optimal_2016]
+-->
+
+
+
+## Clustered Data
 
 Use Meester example and code from Yan and/or Hofert book?
 
 
+
+<!--
 Joint Regression Analysis of Correlated Data Using Gaussian Copulas [add song, li, yuan 2009 ref]
 
 example 2 - joint analysis of longitudinal trial data
@@ -29,8 +71,9 @@ example 2 - joint analysis of longitudinal trial data
 use davis7.dat from Springer Website for Davis textbook "Statistical Methods for the Analysis of Repeated Measurements" https://www.springer.com/us/book/9780387953700
 
 use package gcmr?
+-->
 
-```{r}
+```{r, eval=FALSE, echo=FALSE}
 library(gcmr)
 # https://cran.r-project.org/web/packages/gcmr/index.html
 
@@ -54,7 +97,7 @@ ms_dat$response[is.na(ms_dat$response)]<-TRUE # try replacing NA with FALSE??
 ms_dat$trt <- factor(ms_dat$trt, levels=c("Placebo","Fampridine"))
 ms_dat<-ms_dat[order(ms_dat$id,ms_dat$visit),]
 
-ms_dat
+head(ms_dat)
 
 # model crashes/hangs R
 if(0){
@@ -81,13 +124,35 @@ summary(fit)
 
 # do GEE to compare to paper
 
-
-
 #data(epilepsy)
 #exfit<-gcmr(counts ~ offset(log(time)) + visit + trt + visit:trt, data = epilepsy,subset = (id != 49), marginal = negbin.marg, cormat = cluster.cormat(id, "ar1"),options=gcmr.options(seed=123, nrep=100 ))
 ```
 
 
+We have focused on only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. 
+
+One of the most common applications of copula modeling is in early phase dose finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018]. 
+
+<!--
+survival analysis applications
+
+Joint modeling of progression-free survival and overall survival by a Bayesian normal induced copula estimation model
+[@fu_joint_2013]
+
+Mixed response and time-to-event endpoints for multistage single-arm phase II design
+[@lai_mixed_2015]
+
+Quantifying the association between progression-free survival and overall survival in oncology trials using Kendall's $\tau$: Correlation between progression-free survival and overall survival
+[@weber_quantifying_2018]
+-->
+
+
+<!--
+Surrogacy assessment using principal stratification and a Gaussian copula model
+@conlon_surrogacy_2017
+
+Bayesian adjusted R^2 for the meta-analytic evaluation of surrogate time-to-event endpoints in clinical trials [@renfro_bayesian_2012]
+-->
 
 <!--
 Properties of composite time to first event versus joint marginal analyses of multiple outcomes [@bebu_properties_2018] - This paper doesn't use copulas, assumes joint exp model

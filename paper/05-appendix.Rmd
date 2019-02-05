@@ -1,9 +1,18 @@
 
 # (APPENDIX) Appendix {-}
 
-# Technical Supplement
+# Technical Supplement {#tech-supp}
 
 This appendix has the technical details used to derive copula likelihood function, etc.
+
+* Probability Integral Transformation
+
+Let $Y$ be a continuous random variable with df $F$ and quantile function $F^{-1}$ and define $F(Y)=Z$ then
+$P(Z \le z) = P(F(Y) \le z)= P(F^{-1}(F(Y)) \le F^{-1}(z)) = P(Y \le F^{-1}(z))=F(F^{-1}(z)) =z$ which is recognized as the df of a Uniform(0,1) random variable. So $Z \sim Unif(0,1)$
+
+* Formula for C-volume with arbitrary $d$
+
+$\Delta_{(\mathbf{a},\mathbf{b}]}C=\sum_{i \in \{0,1\}^d} (-1)^{\sum_{j=1}^d i_j}C(a_{1}^{i_1}b_{1}^{1-i_1},\ldots,a_{d}^{i_d}b_{d}^{1-i_d})$ where the sum is over the set of $2^d$ vectors of size $d$ with elements 0 or 1. For $d=2$, the set is $\{(i_1=0,i_2=0),(i_1=0,i_2=1),(i_1=1,i_2=0),(i_1=1,i_2=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C=C(b_1,b_2)-C(b_1,a_2)-C(a_1,b_2)+C(a_1,a_2)$. For $d=3$ the set is $\{(i_1=0,i_2=0,i_3=0),(i_1=0,i_2=0,i_3=1),(i_1=0,i_2=1,i_3=0),(i_1=0,i_2=1,i_3=1),(i_1=1,i_2=0,i_3=0),(i_1=1,i_2=0,i_3=1),(i_1=1,i_2=1,i_3=0),(i_1=1,i_2=1,i_3=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C= C(b_1,b_2,b_3)- C(b_1,b_2,a_3)- C(b_1,a_2,b_3)+ C(b_1,a_2,a_3)- C(a_1,b_2,b_3)+ C(a_1,b_2,a_3)+ C(a_1,a_2,b_3)- C(a_1,a_2,a_3)$
 
 Give formulas for discrete and mixed margins likelihoods from Joe
 
@@ -26,3 +35,10 @@ sessionInfo()
 
 ```{r, ref.label='norm-cop-ex', echo=!knitr::is_html_output(), eval=FALSE}
 ```
+
+```{r, ref.label='tail-dep-ex', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-a', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
