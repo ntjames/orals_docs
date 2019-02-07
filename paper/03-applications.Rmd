@@ -5,38 +5,347 @@
 2 main examples, can also provide smaller examples and summaries
 -->
 
-
-
 Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've reviewed some basic copula theory, we can see how these models are used in practice.
 
 <!-- find a more distinct application from list on previous page for first example -->
 
 ## Benefit-Risk
 
+Costa and Drury [@costa_bayesian_2018] present a simulation involving mixed bivariate outcomes to demonstrate the use of joint copula models for benefit-risk assessment. Assume a two-arm parallel design with total sample size of n=200 and 1:1 randomization to either treatment $t=1$ (placebo) or $t=2$ (active drug). The bivariate response for each individual is $y_i=(y_{i1},y_{i2})$ where $y_{i1}$ is the efficacy outcome assumed to be Normal with mean $\mu_t$ and variance $\sigma_t^2$ and $y_{i2}$ is a binary indicator of whether the participant experienced an adverse event (AE) which follows a Bernoulli distribution with probability $p_t$. Probit regression, which assumes a latent Normal distribution underlying the binary observations, was used for the marginal safety outcome while an OLS model was used for efficacy.
+\begin{gather*}
+H_{\theta}(y_{i1},y_{i2})=C_{\theta}^{Norm}(F_1(y_{i1}|\mu_i,\sigma_i),F_2(y_{i2}|p_i))\\
+y_{i1} \sim Normal(\mu_i,\sigma_i), \quad  y_{i2} \sim Bernoulli(p_i)\\
+\mu_i = \beta_{11} + x_{i2} \beta_{12}, \,\, \sigma_i = s_1 + x_{i2}s_2\\
+\Phi^{-1}(p_i) = \beta_{21} + x_{i2} \beta_{22}\\
+\theta = \omega_{1} + x_{i2} \omega_{2}
+\end{gather*}
+
+The copula dependence parameter $\theta$ is the polyserial correlation which measures the correlation between the Normal efficacy outcome and the latent Normal distribution assumed to underlie the binary safety outcome. 
+
+The values used for the simulation are representative of data from a real respiratory clincal trial. For the placebo group $\mu_1 = -150$, $\sigma_1^2=100^2$, $p_1=0.1$ and $\rho_1=0.1$ and for the treatment group $\mu_2 = -50$, $\sigma_2^2=100^2$, $p_2=0.4$ and $\rho_2=0.6$. The efficacy, AE rate and correlation between them are different by intervention with low dependence for placebo and high dependence for treatment. Interest is centered on the difference in mean efficacy response $\mu_2-\mu_1$ and the difference in probability of adverse events $p_2 - p_1$. The R package `rstan` [@stan_development_team_rstan:_2018] was used to fit the Bayesian models.
+
+<!--
 Bayesian Joint Modelling of Benefit and Bisk in Drug Development
 [@costa_bayesian_2018]
 
 The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future Directions
 [@costa_case_2017]
+-->
 
-
-The R package `rstan` [@stan_development_team_rstan:_2018] was used to fit the Bayesian 
-
-
-```{r br-a}
+```{r br-a, cache=TRUE}
 ## Benefit-Risk application 
 
+# Simulate data
+set.seed(3583)
+
+# function to get copula parameter given rho and p; see Costa section 3.1.2
+getTheta <- function(rho,p){  (rho*sqrt(p*(1-p))) / dnorm(qnorm(p)) }
+
+# number of samples per arm
+n<-100
+
+# placebo group
+mu_1 <- -150
+sigma2_1 <- 100^2
+p_1 <- 0.1  
+rho_1 <- 0.1
+
+nc_p<-normalCopula( getTheta(rho=rho_1, p=p_1)  )
+
+pbo_dist <- mvdc(nc_p, margins = c("norm","binom"),
+                paramMargins = list(list(mean = mu_1, sd = sqrt(sigma2_1)), 
+                                    list(size = 1, prob = p_1)) )
+
+pbo_samps<-rMvdc(n, pbo_dist)
+
+if (0){
+mean(pbo_samps[,1]) # mu_1
+sd(pbo_samps[,1]) # sigma_1
+mean(pbo_samps[,2]) #p_1
+cor(pbo_samps[,1],pbo_samps[,2]) # rho_1 (Pearson corr)
+}
+
+# treatment
+mu_2 <- -50
+sigma2_2 <- 100^2
+p_2 <- 0.4
+rho_2 <- 0.6
+
+nc_t<-normalCopula( getTheta(rho=rho_2, p=p_2)  )
+
+trt_dist <- mvdc(nc_t, margins = c("norm","binom"),
+                paramMargins = list(list(mean = mu_2, sd = sqrt(sigma2_2)), 
+                                    list(size = 1, prob = p_2)) )
+
+trt_samps<-rMvdc(n, trt_dist)
+
+if (0){
+mean(trt_samps[,1]) # mu_2
+sd(trt_samps[,1]) # sigma_2
+mean(trt_samps[,2]) #p_2
+cor(trt_samps[,1],trt_samps[,2]) # rho_2 (Pearson corr)
+}
+
+#combine placebo and treatment data
+dat <- rbind(pbo_samps,trt_samps) %>% cbind(sort(rep(c(0,1),n)),
+                                            sort(rep(c(0,1),n),decreasing=TRUE),
+                                            sort(rep(c(0,1),n))) %>% as.data.frame() 
+names(dat) <- c("efficacy","safety","treatment","trt1","trt2")
+
+dat_lab <- dat
+dat_lab %<>% mutate(treatment=factor(treatment, labels=c("placebo","active")),
+                   safety=factor(safety, labels=c("no AE","AE")))
 ```
 
-```{r br-b}
-
+```{r br-b, fig.cap='Simulated data from Costa and Drury Benefit-Risk Example', fig.show = 'hold', fig.align='center', out.width='95%'}
+ggplot(dat_lab, aes(x=efficacy, fill=treatment)) + 
+  geom_histogram(bins=15, alpha=0.5) + facet_grid(.~safety)
 ```
 
-```{r br-c}
+<!-- old parameterization -->
+```{r br-c0, eval=FALSE, cache=TRUE}
+# Stan code for B-R model
+# http://mc-stan.org/rstan/
+rstan_options(auto_write = TRUE)
 
+mod1_code <- "
+data {
+  int N;
+  vector[N] x;
+  vector[N] y1;
+  int<lower=0, upper=1> y2[N];
+}
+parameters {
+  // params for continuous (efficacy) outcome
+  vector[2] beta1;
+  //vector<lower=0>[2] s;  
+  vector[2] s; 
+
+  //params for binary (safety) outcome
+  vector[2] beta2;
+
+  // copula dependence param
+  vector<lower=-2, upper=2>[2] omega;  
+}
+model {
+  vector[N] mu;
+  vector[N] sigma;
+  vector[N] p;
+  vector[N] theta;
+
+  // marginal for continuous (efficacy) outcome
+  mu = beta1[1] + beta1[2]*x;
+  sigma = s[1] + s[2]*x;
+
+  // marginal for binary (safety) outcome
+  p = Phi(beta2[1] + beta2[2]*x);
+
+  // copula dependence param
+  theta = omega[1]+omega[2]*x;
+
+  for(i in 1:N){
+      if (y2[i]==0) {
+          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lcdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+      } else {
+          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+      }
+    }
+}
+generated quantities {
+  vector[2] mu;
+  vector[2] p;
+  vector[2] theta;
+  vector[2] rho;
+
+  mu[1] = beta1[1];
+  mu[2] = beta1[1] + beta1[2];
+
+  p[1] = Phi(beta2[1]);
+  p[2] = Phi(beta2[1] + beta2[2]);
+
+  theta[1] = omega[1];
+  theta[2] = omega[1] + omega[2];
+
+  rho[1] = theta[1]*exp(normal_lpdf(inv_Phi(p[1])|0,1))/sqrt(p[1]*(1-p[1]));
+  rho[2] = theta[2]*exp(normal_lpdf(inv_Phi(p[2])|0,1))/sqrt(p[2]*(1-p[2]));
+}
+"
+```
+
+```{r br-c, cache=TRUE}
+# Stan code for B-R model
+# http://mc-stan.org/rstan/
+rstan_options(auto_write = TRUE)
+
+mod_code <- "
+data {
+  int N;
+  matrix[N, 2] x;
+  vector[N] y1;
+  int<lower=0, upper=1> y2[N];
+}
+parameters {
+  // params for continuous (efficacy) outcome
+  vector[2] beta1;
+  vector<lower=0>[2] s;  
+  //vector[2] s; 
+
+  //params for binary (safety) outcome
+  vector[2] beta2;
+
+  // copula dependence param
+  vector<lower=-2, upper=2>[2] omega;  
+}
+model {
+  vector[N] mu;
+  vector[N] sigma;
+  vector[N] p;
+  vector[N] theta;
+
+  // priors
+
+  // marginal for continuous (efficacy) outcome
+  mu = beta1[1]*x[,1] + beta1[2]*x[,2];
+  sigma = s[1]*x[,1] + s[2]*x[,2];
+
+  // marginal for binary (safety) outcome
+  p = Phi(beta2[1]*x[,1] + beta2[2]*x[,2]);
+
+  // copula dependence param
+  theta = omega[1]*x[,1]+omega[2]*x[,2];
+
+  for(i in 1:N){
+      if (y2[i]==0) {
+          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lcdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+      } else {
+          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+      }
+    }
+}
+generated quantities {
+  vector[2] mu;
+  vector[2] p;
+  vector[2] theta;
+  vector[2] rho;
+
+  mu[1] = beta1[1];
+  mu[2] = beta1[2];
+
+  p[1] = Phi(beta2[1]);
+  p[2] = Phi(beta2[2]);
+
+  theta[1] = omega[1];
+  theta[2] = omega[2];
+
+  rho[1] = theta[1]*exp(normal_lpdf(inv_Phi(p[1])|0,1))/sqrt(p[1]*(1-p[1]));
+  rho[2] = theta[2]*exp(normal_lpdf(inv_Phi(p[2])|0,1))/sqrt(p[2]*(1-p[2]));
+}
+"
+```
+
+<!-- old parameterization -->
+```{r br-d0, eval=FALSE, cache=TRUE}
+# efficacy marginal model MLE
+mle1<-summary(lm(efficacy~treatment,data=dat))
+
+# safety marginal model MLE
+mle2<-glm(safety~treatment,data=dat,family=binomial(link="probit"))
+
+# set cores 
+options(mc.cores = parallel::detectCores())
+
+#initalize margins at jittered MLE estimate
+init_list <- list(list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))),
+                 list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))))
+
+# format data into list for stan
+mod1_data <- list(N=nrow(dat), x=dat$treatment, y1=dat$efficacy, y2=dat$safety)
+
+# fit model
+fit1 <- stan(model_code = mod1_code, data=mod1_data, seed=3578935,
+             iter=2000, chains=2,
+             init=init_list, control = list(adapt_delta = 0.95))
+```
+
+```{r br-d, cache=TRUE}
+# efficacy marginal model MLE
+mle1<-summary(lm(efficacy~trt1+trt2-1,data=dat))
+
+# safety marginal model MLE
+mle2<-glm(safety~trt1+trt2-1,data=dat,family=binomial(link="probit"))
+
+# set cores 
+options(mc.cores = parallel::detectCores())
+
+#initalize margins at jittered MLE estimate
+init_list <- list(list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))),
+                 list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))))
+
+# format data into list for stan
+mod_data <- list(N=nrow(dat), x=dat[,c("trt1","trt2")], y1=dat$efficacy, y2=dat$safety)
+
+# fit model
+br_fit <- stan(model_code = mod_code, data=mod_data, seed=3578935,
+             iter=2000, chains=2,
+             init=init_list, control = list(adapt_delta = 0.95))
 ```
 
 
+```{r br-e, cache=TRUE}
+#model diagnostics
+#http://mc-stan.org/bayesplot/
+
+pairs(br_fit, pars=c("beta1[1]","beta1[2]","s[1]","s[2]","beta2[1]","beta2[2]",
+                   "omega[1]","omega[2]"))
+
+
+br_posterior <- extract(br_fit, inc_warmup = TRUE, permuted = FALSE)
+
+mcmc_trace(br_posterior, pars = c("mu[1]", "mu[2]", "p[1]", "p[2]", "rho[1]", "rho[2]",
+                                "theta[1]", "theta[2]"), n_warmup = 1000,
+                facet_args = list(nrow = 2, labeller = label_parsed))
+
+mcmc_combo(br_posterior, pars=c("mu[1]","mu[2]"), combo=c("dens","trace"))
+```
+
+```{r br-f, cache=TRUE}
+
+posterior_mu <- extract(br_fit, pars=c("mu[1]","mu[2]"))
+mu <- do.call(cbind.data.frame, posterior_mu) %>% mutate(mu_diff=`mu[2]`-`mu[1]`)
+
+posterior_p <- extract(br_fit, pars=c("p[1]","p[2]"))
+p <- do.call(cbind.data.frame, posterior_p) %>% mutate(p_diff=`p[2]`-`p[1]`)
+
+diffs<-cbind(mu,p)
+
+
+#stan_trace(fit1, pars=c("mu","p","rho","theta"))
+#plot(fit1, pars=c("mu"))
+#plot(fit1, pars=c("p","rho","theta"))
+
+br_tab <- round(summary(br_fit, pars=c("mu","p","rho","theta"))$summary,2)
+```
+
+```{r br-tab, eval=knitr::is_latex_output(), echo=FALSE, results='asis'}
+#?tidy_stan(fit1, pars=c("mu","p","rho","theta")) 
+kable(br_tab, "latex", booktabs = TRUE, escape=TRUE, 
+      caption = 'Benefit-Risk Copula Model Posterior Summary',
+      col.names = c("Mean", "SE Mean", "SD", "2.5%", "25%",
+                    "50%", "75%", "97.5%", "n_eff", "Rhat"))
+```
+
+```{r br-tab-html, eval=knitr::is_html_output(), echo=FALSE}
+kable(br_tab, "html", booktabs = TRUE, escape=FALSE, 
+      caption = 'Benefit-Risk Copula Model Posterior Summary',
+      col.names = c("Mean", "SE Mean", "SD", "2.5\\%", "25\\%",
+                    "50\\%", "75\\%", "97.5\\%", "n_eff", "Rhat"))
+```
+
+
+```{r br-g, cache=TRUE, fig.cap='Posterior treatment effect vs. safety risk difference', fig.show = 'hold', fig.align='center', out.width='95%'}
+# mcmc_hex(diffs, pars=c("mu_diff","p_diff"))
+mcmc_scatter(diffs, pars=c("mu_diff","p_diff"))
+```
 
 <!--
 
@@ -59,9 +368,11 @@ The R package `rstan` [@stan_development_team_rstan:_2018] was used to fit the B
 
 ## Clustered Data
 
-Use Meester example and code from Yan and/or Hofert book?
+[Add Meester example] <!--code from Yan and/or Hofert book?-->
 
+```{r cl-a}
 
+```
 
 <!--
 Joint Regression Analysis of Correlated Data Using Gaussian Copulas [add song, li, yuan 2009 ref]
@@ -71,7 +382,6 @@ example 2 - joint analysis of longitudinal trial data
 use davis7.dat from Springer Website for Davis textbook "Statistical Methods for the Analysis of Repeated Measurements" https://www.springer.com/us/book/9780387953700
 
 use package gcmr?
--->
 
 ```{r, eval=FALSE, echo=FALSE}
 library(gcmr)
@@ -128,39 +438,20 @@ summary(fit)
 #exfit<-gcmr(counts ~ offset(log(time)) + visit + trt + visit:trt, data = epilepsy,subset = (id != 49), marginal = negbin.marg, cormat = cluster.cormat(id, "ar1"),options=gcmr.options(seed=123, nrep=100 ))
 ```
 
+-->
 
 We have focused on only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. 
 
-One of the most common applications of copula modeling is in early phase dose finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018]. 
-
-<!--
-survival analysis applications
-
-Joint modeling of progression-free survival and overall survival by a Bayesian normal induced copula estimation model
-[@fu_joint_2013]
-
-Mixed response and time-to-event endpoints for multistage single-arm phase II design
-[@lai_mixed_2015]
-
-Quantifying the association between progression-free survival and overall survival in oncology trials using Kendall's $\tau$: Correlation between progression-free survival and overall survival
-[@weber_quantifying_2018]
--->
-
+In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
 
 <!--
 Surrogacy assessment using principal stratification and a Gaussian copula model
-@conlon_surrogacy_2017
 
-Bayesian adjusted R^2 for the meta-analytic evaluation of surrogate time-to-event endpoints in clinical trials [@renfro_bayesian_2012]
--->
+Bayesian adjusted R^2 for the meta-analytic evaluation of surrogate time-to-event endpoints in clinical trials []
 
-<!--
-Properties of composite time to first event versus joint marginal analyses of multiple outcomes [@bebu_properties_2018] - This paper doesn't use copulas, assumes joint exp model
--->
-
-
-<!--
 case-control/paired study??
+-->
 
+<!--
 ENAR topic - Operating Characteristics of Bayesian Joint Benefit-Risk Copula Models
 -->
