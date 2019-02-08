@@ -147,15 +147,7 @@ model {
   // copula dependence parameter
   theta = omega[1]*x[,1]+omega[2]*x[,2];
 
-//  for(i in 1:N){
-//      if (y2[i]==0) {
-//          target += normal_lpdf(y1[i]|mu[i],sigma[i]) +  //normal_lcdf((inv_Phi(1-p[i])-theta[i]*
-//inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
-//      } else {
-//          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + //normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-//theta[i]^2)|0,1);
-//      }
-//}
-
+  // build log-likelihood
   for(i in 1:N){
     target += normal_lpdf(y1[i]|mu[i],sigma[i]);
       if (y2[i]==0) {
@@ -622,72 +614,6 @@ mle(nLL,start=list(beta0=uni_coefs[[1]],beta1=uni_coefs[[2]],
     nobs=128L)
 
 ```
-
-<!--
-Joint Regression Analysis of Correlated Data Using Gaussian Copulas [add song, li, yuan 2009 ref]
-
-example 2 - joint analysis of longitudinal trial data
-
-use davis7.dat from Springer Website for Davis textbook "Statistical Methods for the Analysis of Repeated Measurements" https://www.springer.com/us/book/9780387953700
-
-use package gcmr?
-
-```{r, eval=FALSE, echo=FALSE}
-library(gcmr)
-# https://cran.r-project.org/web/packages/gcmr/index.html
-
-in_dir <- getwd()
-# read in data
-ms_dat0 <- read.table(file.path(in_dir,"DAVIS7.DAT"), header=FALSE,
-                     col.names = c("id","trt","wk2_chg","wk4_chg","wk6_chg"),
-                     stringsAsFactors = FALSE)
-
-if (.Platform$OS.type=="unix") ms_dat0 <- ms_dat0[1:80,]
-
-# reshape to long
-ms_dat <- reshape(ms_dat0, varying = list(3:5), v.names ="chg_bl", 
-                  timevar = "visit", direction="long")
-
-# recode and sort
-ms_dat$response <- factor( as.numeric(ms_dat$chg_bl)>0 )
-
-ms_dat$response[is.na(ms_dat$response)]<-TRUE # try replacing NA with FALSE??
-
-ms_dat$trt <- factor(ms_dat$trt, levels=c("Placebo","Fampridine"))
-ms_dat<-ms_dat[order(ms_dat$id,ms_dat$visit),]
-
-head(ms_dat)
-
-# model crashes/hangs R
-if(0){
-fit<-gcmr(response ~ trt + visit, data = ms_dat, 
-     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"))
-  
-fit<-gcmr(response ~ trt + visit, data = ms_dat, 
-     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
-     options=gcmr.options(seed=717, nrep=100))
-
-  
-fit<-gcmr(response ~ trt + visit, data = ms_dat, 
-     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
-     options=gcmr.options(seed=717, nrep=100, method="CG"))
-}
-
-# works with missing removed, but inferences don't match paper
-fit<-gcmr(response ~ trt + visit, data = ms_dat, 
-     subset = (!is.na(ms_dat$response)),
-     marginal=binomial.marg, cormat = cluster.cormat(id, "exchangeable"),
-     options=gcmr.options(seed=717, nrep=1000))
-
-summary(fit)
-
-# do GEE to compare to paper
-
-#data(epilepsy)
-#exfit<-gcmr(counts ~ offset(log(time)) + visit + trt + visit:trt, data = epilepsy,subset = (id != 49), marginal = negbin.marg, cormat = cluster.cormat(id, "ar1"),options=gcmr.options(seed=123, nrep=100 ))
-```
-
--->
 
 We have focused on only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. 
 
