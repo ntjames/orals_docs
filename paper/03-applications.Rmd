@@ -1,9 +1,7 @@
 
 # Applications {#app}
 
-<!--
-2 main examples, can also provide smaller examples and summaries
--->
+<!-- 2 main examples, can also provide smaller examples and summaries -->
 
 Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've reviewed some basic copula theory, we can see how these models are used in practice.
 
@@ -36,7 +34,7 @@ The Case for a Bayesian Approach to Benefit-Risk Assessment: Overview and Future
 ## Benefit-Risk application 
 
 # Simulate data
-set.seed(3583)
+set.seed(4283)
 
 # function to get copula parameter given rho and p; see Costa section 3.1.2
 getTheta <- function(rho,p){  (rho*sqrt(p*(1-p))) / dnorm(qnorm(p)) }
@@ -97,12 +95,15 @@ dat_lab %<>% mutate(treatment=factor(treatment, labels=c("placebo","active")),
                    safety=factor(safety, labels=c("no AE","AE")))
 ```
 
+A histogram of efficacy by treatment and AE status in Figure \@ref(fig:br-b) shows that the highest efficacy was among those in the 'active' treatment group with an adverse event. This reflects the fairly strong correlation between efficacy and safety in the simulation  
+
 ```{r br-b, fig.cap='Simulated data from Costa and Drury Benefit-Risk Example', fig.show = 'hold', fig.align='center', out.width='95%'}
 ggplot(dat_lab, aes(x=efficacy, fill=treatment)) + 
-  geom_histogram(bins=15, alpha=0.5) + facet_grid(.~safety)
+  geom_histogram(bins=20, alpha=0.75) + facet_grid(treatment~safety)
 ```
 
-```{r br-c, cache=TRUE}
+
+```{r br-c1, cache=TRUE}
 # Stan code for B-R model
 # http://mc-stan.org/rstan/
 rstan_options(auto_write = TRUE)
@@ -118,13 +119,12 @@ parameters {
   // params for continuous (efficacy) outcome
   vector[2] beta1;
   vector<lower=0>[2] s;  
-  //vector[2] s; 
 
   //params for binary (safety) outcome
   vector[2] beta2;
 
   // copula dependence param
-  vector<lower=-2, upper=2>[2] omega;  
+  vector<lower=-1, upper=1>[2] omega;  
 }
 model {
   vector[N] mu;
@@ -133,6 +133,9 @@ model {
   vector[N] theta;
 
   // priors
+  beta1 ~ normal(0,1000);
+  beta2 ~ normal(0,1000); 
+  s ~ inv_gamma(0.001,0.001); 
 
   // marginal for continuous (efficacy) outcome
   mu = beta1[1]*x[,1] + beta1[2]*x[,2];
@@ -141,16 +144,28 @@ model {
   // marginal for binary (safety) outcome
   p = Phi(beta2[1]*x[,1] + beta2[2]*x[,2]);
 
-  // copula dependence param
+  // copula dependence parameter
   theta = omega[1]*x[,1]+omega[2]*x[,2];
 
+//  for(i in 1:N){
+//      if (y2[i]==0) {
+//          target += normal_lpdf(y1[i]|mu[i],sigma[i]) +  //normal_lcdf((inv_Phi(1-p[i])-theta[i]*
+//inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+//      } else {
+//          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + //normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-//theta[i]^2)|0,1);
+//      }
+//}
+
   for(i in 1:N){
+    target += normal_lpdf(y1[i]|mu[i],sigma[i]);
       if (y2[i]==0) {
-          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lcdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+        target += normal_lcdf((inv_Phi(1-p[i])-theta[i]*
+inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
       } else {
-          target += normal_lpdf(y1[i]|mu[i],sigma[i]) + normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
+        target += normal_lccdf((inv_Phi(1-p[i])-theta[i]*inv_Phi(normal_cdf(y1[i],mu[i],sigma[i])))/sqrt(1-theta[i]^2)|0,1);
       }
     }
+
 }
 generated quantities {
   vector[2] mu;
@@ -173,67 +188,217 @@ generated quantities {
 "
 ```
 
-```{r br-d, cache=TRUE}
+
+```{r br-c2, cache=TRUE}
+#marginal models assuming independence
+mod0a_code <- "
+data {
+  int N;
+  matrix[N, 2] x;
+  vector[N] y1;
+}
+parameters {
+  // params for continuous (efficacy) outcome
+   vector[2] beta1;
+   real<lower=0> sigma;  
+}
+model {
+  vector[N] mu;
+
+  // priors
+  beta1 ~ normal(0,1000);
+  sigma ~ inv_gamma(0.001,0.001); 
+
+  // marginal for continuous (efficacy) outcome
+  mu = beta1[1]*x[,1] + beta1[2]*x[,2];
+  y1 ~ normal(mu, sigma);
+}
+"
+
+mod0b_code <- "
+data {
+  int N;
+  matrix[N, 2] x;
+  int<lower=0, upper=1> y2[N];
+}
+parameters {
+  //params for binary (safety) outcome
+   vector[2] beta2;
+}
+model {
+  vector[N] p;
+
+  // priors
+  beta2 ~ normal(0,1000); 
+
+  // marginal for binary (safety) outcome
+  p = beta2[1]*x[,1] + beta2[2]*x[,2];
+  y2 ~ bernoulli(Phi(p)); 
+
+//    for(i in 1:N){
+//      p[i] = normal_cdf(beta2[1] + beta2[2]*x[i], 0, 1);
+//      y2[i] ~ bernoulli(p[i]);
+//    }
+
+}
+"
+```
+
+```{r br-d1, cache=TRUE}
+# MCMC parameters
+options(mc.cores = parallel::detectCores())
+n_chains <- 4
+n_iter <- 2000
+
+# format data into list for stan
+mod0_data <- list(N=nrow(dat), x=dat[,c("trt1","trt2")], y1=dat$efficacy, y2=dat$safety)
+
+# fit efficacy marginal model
+fit0a <- stan(model_code = mod0a_code, data=mod0_data, iter=1000, chains=4)
+
+# fit safety marginal model
+fit0b <- stan(model_code = mod0b_code, data=mod0_data, iter=1000, chains=4)
+```
+
+```{r}
+
+print(fit0a)
+stan_trace(fit0a)
+
+print(fit0b, pars=c("beta2"))
+plot(fit0b)
+
+```
+
+
+```{r br-d2, cache=TRUE}
 # efficacy marginal model MLE
 mle1<-summary(lm(efficacy~trt1+trt2-1,data=dat))
-
+ 
 # safety marginal model MLE
 mle2<-glm(safety~trt1+trt2-1,data=dat,family=binomial(link="probit"))
-
-# set cores 
-options(mc.cores = parallel::detectCores())
-
-#initalize margins at jittered MLE estimate
-init_list <- list(list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))),
-                 list(beta1=jitter(mle1$coefficients[,1]), s=jitter(rep(mle1$sigma,2))))
 
 # format data into list for stan
 mod_data <- list(N=nrow(dat), x=dat[,c("trt1","trt2")], y1=dat$efficacy, y2=dat$safety)
 
-# fit model
+#initalize margins at jittered MLE estimate
+init_list <- rep(list(list(beta1=jitter(mle1$coefficients[,1],amount=5),
+                       beta2=jitter(mle2$coefficients,amount=5),
+                       s=jitter(rep(mle1$sigma,2),amount=5))), n_chains)
+
+# fit joint model
 br_fit <- stan(model_code = mod_code, data=mod_data, seed=3578935,
-             iter=2000, chains=2,
+             iter=n_iter, chains=n_chains,
              init=init_list, control = list(adapt_delta = 0.95))
 ```
 
 
-```{r br-e, cache=TRUE}
+```{r br-e, cache=TRUE, eval=FALSE}
 #model diagnostics
 #http://mc-stan.org/bayesplot/
 
 pairs(br_fit, pars=c("beta1[1]","beta1[2]","s[1]","s[2]","beta2[1]","beta2[2]",
                    "omega[1]","omega[2]"))
 
-
 br_posterior <- extract(br_fit, inc_warmup = TRUE, permuted = FALSE)
 
 mcmc_trace(br_posterior, pars = c("mu[1]", "mu[2]", "p[1]", "p[2]", "rho[1]", "rho[2]",
-                                "theta[1]", "theta[2]"), n_warmup = 1000,
+                                "theta[1]", "theta[2]"), n_warmup = floor(n_iter/2),
                 facet_args = list(nrow = 2, labeller = label_parsed))
 
 mcmc_combo(br_posterior, pars=c("mu[1]","mu[2]"), combo=c("dens","trace"))
 ```
 
-```{r br-f, cache=TRUE}
-
+```{r br-f}
+#calculate treatment effect (efficacy) and risk difference (safety)
 posterior_mu <- extract(br_fit, pars=c("mu[1]","mu[2]"))
 mu <- do.call(cbind.data.frame, posterior_mu) %>% mutate(mu_diff=`mu[2]`-`mu[1]`)
 
 posterior_p <- extract(br_fit, pars=c("p[1]","p[2]"))
 p <- do.call(cbind.data.frame, posterior_p) %>% mutate(p_diff=`p[2]`-`p[1]`)
 
-diffs<-cbind(mu,p)
+diffs<-cbind(mu,p) 
+```
 
+```{r br-g1, cache=TRUE, eval=knitr::is_latex_output(), echo=knitr::is_latex_output(), fig.cap='Posterior treatment effect vs. safety risk difference', fig.show = 'hold', fig.align='center', out.width='95%'}
+# scatterplot with histogram margins
+pp <- ggplot(diffs,aes(x=mu_diff,y=p_diff)) + geom_point(alpha=0.15) + geom_density2d() + xlab("Treatment Difference (Efficacy)") + ylab("Treatment Difference (Safety)")
+ 
+ggMarginal(pp, type="histogram", fill = "white", 
+           xparams = list(bins=25), yparams = list(bins=25))
 
-#stan_trace(fit1, pars=c("mu","p","rho","theta"))
-#plot(fit1, pars=c("mu"))
-#plot(fit1, pars=c("p","rho","theta"))
+#mcmc_hex(diffs, pars=c("mu_diff","p_diff"))
+#mcmc_scatter(diffs, pars=c("mu_diff","p_diff"))
+```
 
+```{r br-g2, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Posterior treatment effect vs. safety risk difference'}
+# scatterplot with histogram margins
+mu_diff_hist <- plot_ly(x=diffs$mu_diff, type="histogram",
+                        color=I("steelblue"), showlegend=FALSE)
+
+p_diff_hist <- plot_ly(y=diffs$p_diff,type="histogram",
+                       color=I("steelblue"),showlegend=FALSE)
+
+scatterplt <- plot_ly(x=diffs$mu_diff,y=diffs$p_diff) %>%
+    add_histogram2dcontour(showscale=FALSE, ncontours=10, contours = list(coloring='none'),
+                           color=I("steelblue"), line=list(width=2,smoothing=1.1),
+                           showlegend=FALSE) %>%
+    add_markers(x = diffs$mu_diff, y = diffs$p_diff, color=I("black"),
+                marker=list(size=3), alpha=.25,showlegend=FALSE) %>%
+    layout(xaxis=list(title ="Treatment Difference (Efficacy)"), 
+           yaxis=list(title = "Treatment Difference (Safety)"))  
+
+plt_emp <- plotly_empty(type="scatter",mode="markers")
+  
+marg_plot<-subplot(mu_diff_hist, plt_emp, scatterplt, p_diff_hist,
+ nrows = 2, heights = c(.2, .8), widths = c(.8,.2),
+ shareX=TRUE, shareY=TRUE)
+
+marg_plot
+```
+
+```{r br-h}
+# probability of technical success
+potus<- function(delta_e, delta_p, dat=diffs){
+  
+  potus0 <- function(delta_e, delta_p, dat){
+    mean(dat$mu_diff>=delta_e & dat$p_diff<=delta_p)*100
+  }
+  
+  #vectorize
+  mapply(function(x,y) potus0(x,y,dat), delta_e, delta_p)
+}
+
+de<-seq(70,130,length=50)
+ds<-seq(0,0.6,length=50)
+pp<-outer(de,ds,potus)
+
+# color scheme
+num_cols<-20
+potus_col <- rev(rainbow(20, start = 0/6, end = 4/6))
+```
+
+```{r br-i1, cache=TRUE, eval=knitr::is_latex_output(), echo=knitr::is_latex_output(), fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$', fig.show = 'hold', fig.align='center', out.width='90%'}
+#plot B-R profile contours
+filled.contour(de, ds, pp, col = potus_col, 
+               key.title=title(main = "Posterior \nProbability (%)", cex.main=0.7),
+               xlab=expression(Delta[E]), ylab=expression(Delta[S]),
+               plot.axes = { contour(de,ds,pp, labcex=1.1, nlevels=6, add=TRUE, 
+                                     vfont = c("sans serif", "bold"));
+                                     axis(1); axis(2)} )
+```
+
+```{r br-i2, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$'}
+plot_ly(x=de, y=ds, z=t(pp), type = "contour", colors=potus_col, 
+        contours = list(coloring = 'heatmap', showlabels = TRUE) ) %>%
+  layout(xaxis=list(title ="Delta_E"), yaxis=list(title = "Delta_S"))
+```
+
+```{r br-tab0, cache=TRUE}
 br_tab <- round(summary(br_fit, pars=c("mu","p","rho","theta"))$summary,2)
 ```
 
 ```{r br-tab, eval=knitr::is_latex_output(), echo=FALSE, results='asis'}
-#?tidy_stan(fit1, pars=c("mu","p","rho","theta")) 
 kable(br_tab, "latex", booktabs = TRUE, escape=TRUE, 
       caption = 'Benefit-Risk Copula Model Posterior Summary',
       col.names = c("Mean", "SE Mean", "SD", "2.5%", "25%",
@@ -247,11 +412,6 @@ kable(br_tab, "html", booktabs = TRUE, escape=FALSE,
                     "50\\%", "75\\%", "97.5\\%", "n_eff", "Rhat"))
 ```
 
-
-```{r br-g, cache=TRUE, fig.cap='Posterior treatment effect vs. safety risk difference', fig.show = 'hold', fig.align='center', out.width='95%'}
-# mcmc_hex(diffs, pars=c("mu_diff","p_diff"))
-mcmc_scatter(diffs, pars=c("mu_diff","p_diff"))
-```
 
 <!--
 
@@ -274,9 +434,192 @@ mcmc_scatter(diffs, pars=c("mu_diff","p_diff"))
 
 ## Clustered Data
 
-[Add Meester example] <!--code from Yan and/or Hofert book?-->
+<!--code from Yan and/or Hofert book?-->
 
-```{r cl-a}
+```{r cl-a, cache=TRUE}
+# data
+source("OME_dat.R")
+
+# make bilateral data wide
+bi_dat_wide <- reshape(bi_dat,v.names="cured",direction="wide",
+                       idvar="id", timevar="ear")
+
+ome_dat<-rbind(uni_dat,bi_dat)
+ome_dat<-ome_dat[,c('id','entry','age','trt','cured')]
+
+# design matrices for unilateral and bilateral data
+Xmat1 <- model.matrix(~age+trt, data=uni_dat)
+Xmat2 <- model.matrix(~age+trt, data=bi_dat_wide)
+```
+
+
+```{r cl-b, cache=TRUE}
+#library(stats4)
+
+##' @title Marginal conditional negative log-likelihood
+##' @param beta.m parameter vector defining the marginal calibration map
+##' @param y vector of values of one of the three scores
+##' @param x design matrix
+##' @param pobs logical indicating whether, additionally, the parametric
+##'        pseudo-observations shall be computed and returned
+##' @return -log-likelihood and, possibly, the parametric pseudo-observations
+nmLL <- function(beta.m, y, x, pobs = FALSE) {
+  
+    p <- ncol(x) # number of parameters
+    eta <- x %*% beta.m[1:p]
+    h <- plogis(eta)
+    nLL <- -sum(y*log(h) + (1-y)*log(1-h))
+    
+    if (!pobs) nLL else
+        list(nLL = nLL, U = pbinom(y, size=1, prob=h), 
+             U_prime = pbinom(y-1, size=1, prob=h))
+}
+
+#nmLL(c(1,1,1,1), uni_dat[,"cured"], Xmat1)
+#nmLL(c(1,1,1,1), bi_dat_wide[,"cured.1"], Xmat2)
+#nmLL(c(1,1,1,1), bi_dat_wide[,"cured.2"], Xmat2)
+
+
+##' @title Full conditional negative log-likelihood function
+##' @param par param. vector defining the marg. and copula calibration maps
+##' @param copula a bivariate one-parameter copula object
+##' @return -log-likelihood
+nfLL <- function(par, copula)
+{
+    beta <- par[1] # copula parameter
+    tc <- tryCatch(copula <- setTheta(copula, beta), # try to set parameters
+                   error = function(e) NULL)
+    if (is.null(tc)) return(-Inf) # in case of failure, return -Inf
+   
+    beta.m <- par[2:5] #marginal model parameters
+    
+    #unilateral data log-likelihood
+    nmLL.1 <- nmLL(beta.m, uni_dat[,"cured"], Xmat1)
+    
+    ## Marginal log-likelihood eval for bilateral data and computing the
+    ## corresponding parametric pseudo-observations
+    nmLL.2 <- nmLL(beta.m, bi_dat_wide[,"cured.1"], Xmat2, pobs = TRUE)
+    nmLL.3 <- nmLL(beta.m, bi_dat_wide[,"cured.2"], Xmat2, pobs = TRUE)
+    
+    ## In case of invalid evaluation of the likelihoods, return -Inf
+    if (any(is.na(c(nmLL.1, nmLL.2$nLL, nmLL.3$nLL)))) return(-Inf)
+   
+    ## Parametric pseudo-observations
+    U2<-nmLL.2$U
+    U2_prime<-nmLL.2$U_prime
+    U3<-nmLL.3$U
+    U3_prime<-nmLL.3$U_prime
+    
+    ## -log-likelihood for joint dist. using differences
+    cP <- pCopula(cbind(U2,U3), copula=copula) - 
+    pCopula(cbind(U2_prime,U3), copula=copula) -
+    pCopula(cbind(U2,U3_prime), copula=copula) +
+    pCopula(cbind(U2_prime,U3_prime), copula=copula)
+
+    cl <- -sum( log(cP) )
+    
+    # complete -log-likelihood with unilateral and bilateral data contributions
+    cl + nmLL.1 
+}
+
+
+#cop <- frankCopula(8,dim=2)
+#dCopula(c(1,0.7),cop=frankCopula(8,dim=2), log=TRUE)
+
+#pCopula(c(1,0.7),copula=cop) - pCopula(c(1-1,0.7),copula=cop) -
+#  pCopula(c(1,0.7-1),copula=cop) + pCopula(c(1-1,0.7-1),copula=cop)
+
+
+# initialize marginal parameters at glm est. assuming independence
+fit_init<-glm(cured~age+trt, dat=ome_dat, family="binomial")
+
+# initialize copula parameter by estimating unadjusted spearman's rho
+rho <- cor(bi_dat_wide$cured.1, bi_dat_wide$cured.2, method = "spearman")
+
+alp_fun <-function(alpha, r) {
+  (1-alpha*exp(-alpha/2)-exp(-alpha))*(exp(-alpha/2)-1)^(-2) - r
+}
+
+alp_init <- uniroot(alp_fun,c(-10,10), tol = 0.0001, r=rho)$root
+
+init_vals<-c(alp_init, coef(fit_init)[1:4])
+
+#nfLL(init_vals,y=NULL,x=NULL,copula=frankCopula(dim=2))
+
+
+cl_fit<-optim(init_vals, nfLL, copula=frankCopula(dim=2),
+              method = "L-BFGS-B", hessian=TRUE)
+
+cov_cl_fit <- solve(cl_fit$hessian)
+
+#sqrt(diag(cov_cl_fit))
+
+# compare to fit under independence assumption
+cl_fit2<-optim(c(0,init_vals[2:5]), nfLL, copula=indepCopula(dim=2),
+              method = "L-BFGS-B", hessian=TRUE)
+cov_cl_fit2 <- solve(cl_fit2$hessian[2:5,2:5])
+sqrt(diag(cov_cl_fit2))
+
+
+2*5+2*cl_fit$`value` # AIC= 2p - 2 log-likelihood Frank copula model
+
+2*4+2*cl_fit2$`value` # AIC= 2p - 2 log-likelihood ind model
+
+
+cl_fit$`par`
+cl_fit2$`par`
+```
+
+```{r cl-tab0, cache=TRUE}
+cl_tab<-data.frame( Est=cl_fit$par, SE=sqrt(diag(cov_cl_fit)),
+  CI_95_lb=cl_fit$par+qnorm(0.025)*sqrt(diag(cov_cl_fit)),
+  CI_95_ub=cl_fit$par-qnorm(0.025)*sqrt(diag(cov_cl_fit)),
+  OR=c(NA,exp(cl_fit$par[2:5])))
+rownames(cl_tab)<-c("alpha","(intercept)","age>=6","age2-5","trt_amoxicillin")
+cl_tab
+
+alp_fun(8.313,0) # est of spearman's rho
+```
+
+```{r cl-tab, eval=knitr::is_latex_output(), echo=FALSE, results='asis'}
+kable(cl_tab, "latex", booktabs = TRUE, escape=TRUE, 
+      caption = 'OME Model Estimates',
+      col.names = c("Estimate", "SE Estimate", "OR"))
+```
+
+```{r cl-tab-html, eval=knitr::is_html_output(), echo=FALSE}
+kable(cl_tab, "html", booktabs = TRUE, escape=FALSE, 
+      caption = 'OME Model Estimates',
+      col.names = c("Estimate", "SE Estimate", "OR"))
+```
+
+
+```{cl-scratch,eval=FALSE,echo=FALSE}
+
+uni_nLL <- function(i,beta0,beta1,beta2,beta3){
+  
+  eta <- beta0*Xmat1[i,1] + beta1*Xmat1[i,2] + beta2*Xmat1[i,3] + beta3*Xmat1[i,4]
+  h <- plogis(eta)
+  y <- uni_dat[i,"cured"]
+  
+return( -(y*log(h) + (1-y)*log(1-h)) )
+}
+
+uni_nLL(2,1,1,1,1)
+
+nLL<-function(beta0,beta1,beta2,beta3){
+  sum( sapply(1:128, function(x) uni_nLL(x,beta0,beta1,beta2,beta3)) )
+}
+
+
+fit_uni<-glm(cured~age+trt, dat=uni_dat, family="binomial")
+
+uni_coefs<-fit_uni$coef
+
+
+mle(nLL,start=list(beta0=uni_coefs[[1]],beta1=uni_coefs[[2]],
+                   beta2=uni_coefs[[3]],beta3=uni_coefs[[4]]),
+    nobs=128L)
 
 ```
 
