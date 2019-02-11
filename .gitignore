@@ -1,6 +1,12 @@
 
 
 /paper/output
+/paper/_bookdown_files
+
+## bib and csl file
+*.bib
+*.csl
+*.Rhistory
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

@@ -37,7 +37,7 @@ knitr::opts_chunk$set(echo = knitr::is_html_output())
 wd<-getwd()
 
 # load packages
-libs<-c("copula", "knitr", "kableExtra", "magrittr", "mvtnorm", "polycor", "ggplot2", "rstan","plotly")
+libs<-c("copula", "knitr", "kableExtra", "magrittr", "ggplot2", "rstan", "plotly", "bayesplot", "ggExtra")
 invisible(lapply(libs, library, character.only = TRUE))
 ```
 
