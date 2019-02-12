@@ -1,13 +1,14 @@
 
 # Applications {#app}
 
-<!-- 2 main examples, can also provide smaller examples and summaries -->
+<!-- 2 main examples, can also provide smaller examples and summaries 
 
-Several applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that we've reviewed some basic copula theory, we can see how these models are used in practice.
+Two applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that basic copula theory has been reviewed, we can see how these models are used in practice.
+-->
 
 ## Benefit-Risk Analysis
 
-Costa and Drury [@costa_bayesian_2018] present a simulation involving mixed bivariate outcomes to demonstrate the use of joint copula models for benefit-risk assessment. The simulation assumes a two-arm parallel design with total sample size of n=200 and 1:1 randomization to either treatment $t=1$ (placebo) or $t=2$ (active drug). The bivariate response for individual $i$ is $y_i=(y_{i1},y_{i2})$ where $y_{i1}$ is the efficacy outcome assumed to be normal with mean $\mu_{t}$ and variance $\sigma_{t}^2$ and $y_{i2}$ is a binary indicator of whether the participant experienced an adverse event (AE) which follows a Bernoulli distribution with probability $p_{t}$. A vector of indicators $x_i=(x_{i1},x_{i2})$ specifies treatment in either the placebo or active arm. Probit regression -- which assumes a latent normal distribution underlying the binary observations -- was used for the marginal safety outcome while an OLS model was used for efficacy. A normal conditional copula that allows different dependence in each treatment group was used to connect the two marginal models. The overall model specification is:
+Costa and Drury [@costa_bayesian_2018] present a simulation involving mixed bivariate outcomes to demonstrate the use of joint copula models for benefit-risk analysis. The simulation assumes a two-arm parallel design with total sample size of n=200 and 1:1 randomization to either treatment $t=1$ (placebo) or $t=2$ (active drug). The bivariate response for individual $i$ is $y_i=(y_{i1},y_{i2})$ where $y_{i1}$ is the efficacy outcome assumed to be normal with mean $\mu_{t}$ and variance $\sigma_{t}^2$ and $y_{i2}$ is a binary indicator of whether the participant experienced an adverse event (AE) which follows a Bernoulli distribution with probability $p_{t}$. A vector of indicators $x_i=(x_{i1},x_{i2})$ specifies treatment in either the placebo or active arm. Probit regression -- which assumes a latent normal distribution underlying the binary observations -- was used for the marginal safety outcome while an OLS model was used for efficacy. A normal conditional copula that allows different dependence in each treatment group was used to connect the two marginal models. The overall model specification is:
 \begin{gather*}
 y_{i1} \sim Normal(\mu_{t},\sigma_{t}), \,\, \mu_{t} = x_{i1}\beta_{11} + x_{i2}\beta_{12}, \,\, \sigma_{t} = x_{i1}s_1 + x_{i2}s_2\\
 y_{i2} \sim Bernoulli(p_{t}), \,\, \Phi^{-1}(p_i) = x_{i1}\beta_{21} + x_{i2}\beta_{22}\\
@@ -295,7 +296,7 @@ kable(br_tab, "html", booktabs = TRUE, escape=FALSE,
                     "50\\%", "75\\%", "97.5\\%", "eff. num. samps", "Rhat")) 
 ```
 
-Using the posterior samples, the difference in mean efficacy response $\mu_2-\mu_1$ and the difference in probability of adverse events $p_2 - p_1$ was calculated for the normal copula and independence models. Figures `r if (knitr::is_html_output()) '\\@ref(fig:br-f-html)' else '\\@ref(fig:br-f)'` and `r if (knitr::is_html_output()) '\\@ref(fig:br-f-ind-html)' else '\\@ref(fig:br-f-ind)'` plot the results along with overlaid density curves and marginal histograms. The marginal histograms are nearly identical for both models, but the efficacy and safety treatment differences from the copula model have a clear positive dependence while there is no relationship between them in the independence model. 
+Using the posterior samples, the difference in mean efficacy response $\mu_2-\mu_1$ and the difference in probability of adverse events $p_2 - p_1$ was calculated for the normal copula and independence models. Figures `r if (knitr::is_html_output()) '\\@ref(fig:br-f-html)' else '\\@ref(fig:br-f)'` and `r if (knitr::is_html_output()) '\\@ref(fig:br-f-ind-html)' else '\\@ref(fig:br-f-ind)'` plot the results along with overlaid density curves and marginal histograms. The marginal histograms are nearly identical for both models, but the efficacy and safety treatment differences from the copula model have a clear positive dependence while there is no relationship between them in the independence model as expected. 
 
 ```{r br-e, cache=TRUE}
 #calculate treatment effect (efficacy) and risk difference (safety)
@@ -344,7 +345,7 @@ marg_plot
 ```
 
 ```{r br-f-ind-html, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Posterior treatment effect vs. safety risk difference posterior estimates from independence model'}
-# scatterplot with histogram margins
+# scatterplot with histogram margins 
 mu_diff_hist0 <- plot_ly(x=diffs0$mu_diff, type="histogram", nbinsx = 25,
                         color=I("steelblue"), showlegend=FALSE)
 
@@ -450,7 +451,7 @@ plot_ly(x=de, y=ds, z=t(pp0), type = "contour", colors=potus_col,
 
 Meester and MacKay [@meester_parametric_1994] present a different use of copulas. In this case, there is a single outcome of interest -- whether or not OME was cured -- and the copula is used to account for dependence between ears for an individual. The study randomized 62 children with unilateral OME and 44 children with bilateral OME to the cefaclor arm. In addition, 66 children with unilateral OME and 31 children with bilateral OME were randomized to the amoxicillin arm. Age was given in categories of $<2$ yr, $2-5$ yr, and $\ge$ 6 yr. A binary indicator of cure (yes/no) was recorded for each affected ear after 14 days of treatment. 
 
-The logistic regression model for each ear is: $\text{logit}[Pr(\text{ear cured}_i|\mathbf{X}_i=\mathbf{x}_i)]=\beta_0 + \beta_1x_{\text{amox},i} + \beta_2 x_{\text{age } 2-5,i} + \beta_3 x_{\text{age}\ge 6,i}=\mathbf{\beta'x_i}$ or equivalently $p_i = Pr(\text{ear cured}_i|\mathbf{x}_i)=\frac{1}{1+\exp(-\mathbf{\beta'x_i})}$. For the 128 children with unilateral OME, this completes the model specification. For the 75 children with bilateral OME, the dependence between the left and right ear was modeled using the same logistic regression for each margin and a Frank copula with the form $C_{\alpha}^{Frank}(u_1,u_2)=-\frac{1}{\alpha}\log\left(1+\frac{(\exp(-\alpha u_1)-1)(\exp(-\alpha u_2)-1)}{\exp(-\alpha)-1} \right),$ $(u_1,u_2) \in [0,1]^2,\, \alpha \in \mathbb{R}\ \backslash \{0\}$ to specify the joint distribution using equation \@ref(eq:eq2-1) in Sklar's theorem. The values $u_1$ and $u_2$ are pseudo-observations calculated using $F_{Y_i}(y_i)=u_i$ where $F_{Y_i}$ is the univariate Bernoulli df with parameter $p_i$ calculated from the logistic model. For the Frank copula, positive dependence increases as $\alpha \to \infty$ and negative dependence increases as $\alpha \to -\infty$; $\alpha=0$ represents independence. The complete log-likelihood is specified by adding the logistic regression model log-likelhoods from those with univariate data to the copula log-likelihoods from those with bivariate data. Because the copula marginal models and the individual logistic regression model are the same, we can consistently estimate the parameters of interest.
+The logistic regression model for each ear is: $\text{logit}[Pr(\text{ear cured}_i|\mathbf{X}_i=\mathbf{x}_i)]=\beta_0 + \beta_1x_{\text{amox},i} + \beta_2 x_{\text{age } 2-5,i} + \beta_3 x_{\text{age}\ge 6,i}=\mathbf{\beta'x_i}$ or equivalently $p_i = Pr(\text{ear cured}_i|\mathbf{x}_i)=\frac{1}{1+\exp(-\mathbf{\beta'x_i})}$. For the 128 children with unilateral OME, this completes the model specification. For the 75 children with bilateral OME, the dependence between the left and right ear was modeled using the same logistic regression for each margin and a Frank copula with the form $C_{\alpha}^{Frank}(u_1,u_2)=-\frac{1}{\alpha}\log\left(1+\frac{(\exp(-\alpha u_1)-1)(\exp(-\alpha u_2)-1)}{\exp(-\alpha)-1} \right),$ $(u_1,u_2) \in [0,1]^2,\, \alpha \in \mathbb{R}\ \backslash \{0\}$ to specify the joint distribution using equation \@ref(eq:eq2-1) in Sklar's theorem. The values $u_1$ and $u_2$ are pseudo-observations calculated using $F_{Y_i}(y_i)=u_i$ where $F_{Y_i}$ is the univariate Bernoulli df with parameter $p_i$ calculated from the logistic model. For the Frank copula, positive dependence increases as $\alpha \to \infty$ and negative dependence increases as $\alpha \to -\infty$; $\alpha=0$ represents independence. The complete log-likelihood is specified by adding the logistic regression model log-likelhoods from those with univariate data to the copula log-likelihoods from those with bivariate data. Because the copula marginal models and the individual logistic regression model are the same, the parameters of interest can be estimated consistently.
 
 ```{r cl-a}
 ## OME data
@@ -566,7 +567,7 @@ alp_fun(cl_fit[['par']][[1]],0) # est of spearman's rho
 }
 ```
 
-The maximum likelihood estimates and standard errors were calculated using the `optim` function to minimize the negative log-likelihood. Parameter estimates and odds ratios for the regression parameters are shown in Table `r if (knitr::is_html_output()) '\\@ref(tab:cl-tab-html)' else '\\@ref(tab:cl-tab)'`. 
+The maximum likelihood estimates and standard errors were calculated using the `optim` function to minimize the negative log-likelihood. Table `r if (knitr::is_html_output()) '\\@ref(tab:cl-tab-html)' else '\\@ref(tab:cl-tab)'` shows parameter estimates, standard errors and odds ratios for the regression parameters. 
 
 The copula parameter estimate is `r round(cl_fit[['par']][[1]],3)` (equivalent to Spearman's $\rho=$ `r round(alp_fun(cl_fit[['par']][[1]],0),3)`) which represents strong dependence within individuals. The regression coefficients show that both age and treatment have a significant effect. Older children have significantly higher odds of cure compared to those $<2$ yr after adjusting for treatment group (OR and $95\%$ confidence intervals; age 2-5 yr $_{2.24}5.007_{11.21}$; age $\ge$ 6 yr $_{1.65}3.21_{6.25}$). Those treated with amoxicillin had a significantly lower odds of cure compared to cefaclor (OR and $95\%$ confidence interval; $_{0.26}0.454_{0.80}$).
 
@@ -596,7 +597,7 @@ kable(cl_tab, "html", booktabs = TRUE, escape=FALSE,
       col.names = c("Estimate", "SE Estimate", "OR (95\\% CI)"))
 ```
 
-We have focused on only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose-finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
+This report has described only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose-finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
 
 
 <!--

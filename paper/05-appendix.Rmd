@@ -10,19 +10,19 @@ $P(Z \le z) = P(F(Y) \le z)= P(F^{-1}(F(Y)) \le F^{-1}(z)) = P(Y \le F^{-1}(z))=
 
 * Formula for C-volume with arbitrary $d$
 
-\begin{gather}
+\begin{equation}
 \Delta_{(\mathbf{a},\mathbf{b}]}C=\sum_{i \in \{0,1\}^d} (-1)^{\sum_{j=1}^d i_j}C(a_{1}^{i_1}b_{1}^{1-i_1},\ldots,a_{d}^{i_d}b_{d}^{1-i_d})
-\end{gather}
+\end{equation}
 where the sum is over the set of $2^d$ vectors of size $d$ with elements 0 or 1. For $d=2$, the set is $\{(i_1=0,i_2=0),(i_1=0,i_2=1),(i_1=1,i_2=0),(i_1=1,i_2=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C=C(b_1,b_2)-C(b_1,a_2)-C(a_1,b_2)+C(a_1,a_2)$. For $d=3$ the set is $\{(i_1=0,i_2=0,i_3=0),(i_1=0,i_2=0,i_3=1),(i_1=0,i_2=1,i_3=0),(i_1=0,i_2=1,i_3=1),(i_1=1,i_2=0,i_3=0),(i_1=1,i_2=0,i_3=1),(i_1=1,i_2=1,i_3=0),(i_1=1,i_2=1,i_3=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C= C(b_1,b_2,b_3)- C(b_1,b_2,a_3)- C(b_1,a_2,b_3)+ C(b_1,a_2,a_3)- C(a_1,b_2,b_3)+ C(a_1,b_2,a_3)+ C(a_1,a_2,b_3)- C(a_1,a_2,a_3)$.
 
 * Likelihood for discrete margins  
 
-\begin{gather}
+\begin{equation}
 \ell(\mathbf{\gamma}_1,\ldots,\mathbf{\gamma}_d,\mathbf{\theta}) = \sum_{i=1}^{n} 
 \log \{  
 \sum_{(\diamond_1 \cdots \diamond_d) \in \{-,+\}^d } (-1)^{\#\{\diamond_j=-\}} C_{\theta}(F_1(y_{i1}^{\diamond_1};\mathbf{\gamma}_1),\ldots,F_d(y_{id}^{\diamond_d};\mathbf{\gamma}_d))
 \} (\#eq:eq-ll-disc)
-\end{gather}
+\end{equation}
 
 Where $y_{ij}^{+}$ (with $\diamond_j=+$) and $y_{ij}^{-}$ (with $\diamond_j=-$) refer to evaluation as right limits and left limits, respectively. For $d=2$ the innermost sum is over the set $(\diamond_1,\diamond_2) \in \{-,+\}^2$, i.e. $\{(\diamond_1=-,\diamond_2=-),(\diamond_1=-,\diamond_2=+),(\diamond_1=+,\diamond_2=-),(\diamond_1=+,\diamond_2=+) \}$. So the inner sum M is: 
 \begin{eqnarray}
