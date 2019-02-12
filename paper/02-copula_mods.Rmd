@@ -47,8 +47,6 @@ Just as all univariate dfs must satisfy certain properties, each copula must sat
 
 <!--
 [See https://cran.r-project.org/web/packages/copula/vignettes/empiricial_copulas.html Example 3 and Genest & Neslehova paper for examples/explanation of non-uniqueness with discrete copula] 
-
-Genest and Neslehova [@genest_primer_2007] describe many limitations and potential problems regarding copulas with discrete models which will mention during the review of copula concepts in the next section. 
 -->
 
 A given set of dfs $F_1,\ldots,F_d$ can correspond to many different multivariate dfs. This was illustrated in the previous section where identical normal and gamma margins produced two different bivariate dfs when combined with different copulas. The class of all the multivariate dfs with fixed margins $F_1,\ldots,F_d$ is called the *Fréchet class*. Similarly, the class of all dfs that can be derived from a given copula, $C$, is called a *meta-C* model. Consider the bivariate normal (or Gaussian) copula with correlation $\rho$:
@@ -74,12 +72,17 @@ mvd_nc2 <- mvdc(copula = nc, margins = c("t", "exp"),
               paramMargins = list(list(df=3), 
                                   list(rate = 1)))
 
+if (0){ 
 #calculate true rho and tau
-if (0){ rho(nc); tau(nc) }
-
+rho(nc); tau(nc) 
+  
 # plot joint densities
-#contour(mvd_nc1, dMvdc, xlim=c(-4,4), ylim=c(-4,4), 
-#      xlab="Normal", ylab="Normal")
+contour(mvd_nc1, dMvdc, xlim=c(-4,4), ylim=c(-4,4), 
+      xlab="Normal", ylab="Normal")
+
+contour(mvd_nc2, dMvdc, xlim=c(-4,4), ylim=c(-2,6), 
+      xlab="Student t", ylab="Exponential")
+}
 
 #magnify plots
 cx <- 1.5
@@ -94,10 +97,6 @@ leg1<-c(as.expression( bquote(hat(rho)~"="~.(mvd_nc1_rho[1,2])) ),
 plot(mvd_nc1_samps, pch=16, col=rgb(0,0,0,0.2), xlab="(1)", ylab="", 
      cex=cx, cex.axis=cx, cex.lab=cx)
 legend("topleft",legend=leg1, cex=cx)
-
-# plot joint density
-#contour(mvd_nc2, dMvdc, xlim=c(-4,4), ylim=c(-2,6), 
-#      xlab="Student t", ylab="Exponential")
 
 mvd_nc2_samps <- rMvdc(2000, mvd_nc2)
 mvd_nc2_rho <- round(cor(mvd_nc2_samps, method="spearman"),3)
@@ -221,9 +220,6 @@ Other dependence measures:
 Blomqvist's $\beta$ (see Joe p 57)
 Hoeffding's Dependence coefficient $D$ (see Ozwar pdf p8 and https://en.wikipedia.org/wiki/Hoeffding%27s_independence_test)
 Gini rank correlation coefficient (see Ozwar pdf p8 and https://doi-org.proxy.library.vanderbilt.edu/10.1080/10485259808832744)
-
-For discrete margins, measures of association may depend on the margins in this scenario, which is counter to the goal of separating marginal and dependence model specification
-[@denuit_constraints_2005] ==> can no longer directly interpret copula parameter in terms of dependence
 -->
 
 Another dependence measure often studied in the context of copulas is *tail dependence* which quantifies the strength of dependence in the joint tails of the multivariate distribution. Multivariate dfs with 'heavier' tails place higher probability on extreme events occuring simultaneously. Figure \@ref(fig:tail-dep-ex) (reproduced using code from [@hofert_elements_2018]) shows four samples from a Fréchet class with identical margins and Kendall's $\tau$, but different copulas. The differences in the proportion of samples in the bivariate tails provides some insight into the concept of tail dependence. The normal copula has no tail dependence (unless the variables are comonotonic), while the Student-$t$ has symmetric upper and lower tail dependence. The Gumbel copula only allows upper tail dependence and the Clayton copula only allows lower tail dependence. 
@@ -233,7 +229,8 @@ i.e., the limit as $q$ goes to 0 of the conditional probability of $Y_2$ being s
 
 ```{r tail-dep-ex, cache=TRUE, fig.cap='Four samples of n=10000 random draws from bivariate distributions constructed with standard normal margins and Kendall\'s $\\tau=0.7$ with (clockwise from top left) normal copula, Student-$t_3$ copula, Gumbel copula and Clayton copula. Dashed lines indicate the 0.005 and 0.995 quantiles of the standard normal margins.', fig.show = 'hold', fig.align='center', out.width='45%'}
 
-### Four distributions with N(0,1) margins and a Kendall's tau of 0.7
+### Tail Dependence 
+## Four distributions with N(0,1) margins and a Kendall's tau of 0.7
 
 ## Kendall's tau and corresponding copula parameters
 tau <- 0.7
@@ -353,10 +350,6 @@ For copula modeling, $p(y|\theta)$ in equation \@ref(eq:bayes1) is replaced by t
 
 Performing inference for copula models in a Bayesian framework has several advantages. Principal among these is the ability to answer inferential questions using interpretable posterior probabilities as discussed earlier rather than the hypothesis tests and p-values which are dominant in the frequentist paradigm. Bayesian models correctly propagate uncertainty by accounting for the variance in the marginal models when estimating copula parameters [@craiu_mixed_2012]. Since the posterior can be iteratively updated as new data are collected, they are also attractive for adaptive or sequential designs [@yuan_bayesian_2011]. Smith [@smith_estimation_2012; @damien_bayesian_2013] describes several circumstances where a Bayesian copula model may be preferred. These include: when the likelihood is difficult to maximize but the posterior can be approximated well using a Monte Carlo approach; when the focus of inference is a dependence measure, quantile, or other statistic for which confidence intervals or p-values are difficult to obtain; when using hierarchical models of copula dependence structure or margins; and when performing penalization for models with a large number of parameters. Finally, by developing appropriate priors Bayesian models can include information from different sources including previous related studies, pre-clinical models, elicited clinical expertise, or observational data sources, although these extensions have not been well explored using copula models.
 
-<!--
-Other benefits: Bayesian data augmentation []
--->
-
 ## Copula Regression
 <!-- Extension to regression -->
 
@@ -389,7 +382,6 @@ Single-index copulas [@fermanian_single-index_2018]
 -->
 
 ## Extensions
-<!-- this section should be about methodological extensions, not applications to clinical trials -->
 
 In addition to the conditional copula models discussed in the previous section, there is extensive literature describing theoretical and methodological extensions related to copula modeling of multivariate survival data [@shih_inferences_1995; @wang_estimating_2003; @he_flexible_2003; @romeo_bivariate_2006; @fu_joint_2013; @lai_mixed_2015; @weber_quantifying_2018], longitudinal or clustered data [@meester_parametric_1994; @eluru_modeling_2010; @madsen_joint_2011; @wu_gaussian_2014; @kwak_estimation_2017; @kwak_estimation_2017-1], joint longitudinal/survival outcomes [@ganjali_copula_2015; @kurum_copula_2018], missing data [@ding_copula_2015; @gomes_copula_2019] and latent factors underlying the dependence structure [@krupskii_factor_2013; @tan_bayesian_2018]. Another important area of active research is vine copulas. These models are used to specify multivariate dependence structure with more than 2 dimensions by representing the $d$-dimensional copula in terms of $d \choose 2$ bivariate copulas [@joe_dependence_2015; @smith_modeling_2010; @min_bayesian_2010; @gruber_bayesian_2017; @barthel_dependence_2018]. 
 

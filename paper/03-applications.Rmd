@@ -1,9 +1,8 @@
 
 # Applications {#app}
 
-<!-- 2 main examples, can also provide smaller examples and summaries 
-
-Two applications of copula modeling in clinical trials were mentioned briefly in the introduction. Now that basic copula theory has been reviewed, we can see how these models are used in practice.
+<!-- 
+2 main examples, can also provide smaller examples and summaries 
 -->
 
 ## Benefit-Risk Analysis
@@ -421,31 +420,11 @@ filled.contour(de, ds, pp, col = potus_col,
                                      axis(1); axis(2)} )
 ```
 
-<!-- knitr::is_latex_output() 
-```{r br-h-ind, cache=TRUE, eval=FALSE, echo=FALSE, fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$ from independence model', fig.show = 'hold', fig.align='center', out.width='90%'}
-#plot B-R profile contours
-filled.contour(de, ds, pp0, col = potus_col, 
-               key.title=title(main = "Posterior \nProbability (%)", cex.main=0.7),
-               xlab=expression(Delta[E]), ylab=expression(Delta[S]),
-               plot.axes = { contour(de,ds,pp0, labcex=1.1, nlevels=6, add=TRUE, 
-                                     vfont = c("sans serif", "bold"));
-                                     axis(1); axis(2)} )
-```
--->
-
 ```{r br-h-html, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$ from normal copula model'}
 plot_ly(x=de, y=ds, z=t(pp), type = "contour", colors=potus_col, 
         contours = list(coloring = 'heatmap', showlabels = TRUE) ) %>%
   layout(xaxis=list(title ="Delta_E"), yaxis=list(title = "Delta_S"))
 ```
-
-<!-- knitr::is_html_output() 
-```{r br-h-html-ind, cache=TRUE, eval=FALSE, fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$ from independence model'}
-plot_ly(x=de, y=ds, z=t(pp0), type = "contour", colors=potus_col, 
-        contours = list(coloring = 'heatmap', showlabels = TRUE) ) %>%
-  layout(xaxis=list(title ="Delta_E"), yaxis=list(title = "Delta_S"))
-```
--->
 
 ## Clustered Data
 
@@ -598,48 +577,6 @@ kable(cl_tab, "html", booktabs = TRUE, escape=FALSE,
 ```
 
 This report has described only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose-finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
-
-
-<!--
-```{r cl-scratch, eval=FALSE,echo=FALSE}
-uni_nLL <- function(i,beta0,beta1,beta2,beta3){
-  
-  eta <- beta0*Xmat1[i,1] + beta1*Xmat1[i,2] + beta2*Xmat1[i,3] + beta3*Xmat1[i,4]
-  h <- plogis(eta)
-  y <- uni_dat[i,"cured"]
-  
-return( -(y*log(h) + (1-y)*log(1-h)) )
-}
-
-uni_nLL(2,1,1,1,1)
-
-nLL<-function(beta0,beta1,beta2,beta3){
-  sum( sapply(1:128, function(x) uni_nLL(x,beta0,beta1,beta2,beta3)) )
-}
-
-
-fit_uni<-glm(cured~age+trt, dat=uni_dat, family="binomial")
-
-uni_coefs<-fit_uni$coef
-
-
-mle(nLL,start=list(beta0=uni_coefs[[1]],beta1=uni_coefs[[2]],
-                   beta2=uni_coefs[[3]],beta3=uni_coefs[[4]]),
-    nobs=128L)
-
-#nmLL(c(1,1,1,1), uni_dat[,"cured"], Xmat1)
-#nmLL(c(1,1,1,1), bi_dat_wide[,"cured.1"], Xmat2)
-#nmLL(c(1,1,1,1), bi_dat_wide[,"cured.2"], Xmat2)
-
-#cop <- frankCopula(8,dim=2)
-#dCopula(c(1,0.7),cop=frankCopula(8,dim=2), log=TRUE)
-#pCopula(c(1,0.7),copula=cop) - pCopula(c(1-1,0.7),copula=cop) -
-#  pCopula(c(1,0.7-1),copula=cop) + pCopula(c(1-1,0.7-1),copula=cop)
-
-#nfLL(init_vals,y=NULL,x=NULL,copula=frankCopula(dim=2))
-```
-
--->
 
 <!--
 -Dose-Finding Based on Efficacy-Toxicity Trade-Offs [@thall_dose-finding_2004]

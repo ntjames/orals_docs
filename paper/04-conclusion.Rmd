@@ -6,46 +6,11 @@ Copula models have wide applicability in clinical trials where correctly account
 Copula models have been fairly well explored in the context of early phase dose-finding trials, survival analysis, and longitudinal data, but their application -- especially using a Bayesian framework -- has been limited in other clinical trial settings where they may be advantageous. Potential avenues of future research include Bayesian copula models which incorporate information from historical controls, heterogeneous populations (e.g., pediatric vs. adult, multiple countries or regions), or large observational data sources. We are currently researching the conditions under which Bayesian power for a marginal efficacy assessment can be improved by borrowing information from other correlated efficacy endpoints. A further area of interest is a structured comparison to other methods for quantitative benefit-risk analysis (e.g., net benefit:risk index) or as an alternative to composite or ordinal outcome approaches which transform a multidimensional outcome into a unidimensional outcome.
 
 <!--
-!!! foreshadow avenues for future research throughout by drawing comparisons, highlighting limitations of current methods, etc.
-
-using a Bayesian framework to model, but their application has been limited for other clinical trial settings in which they may be advantageous. 
-
-!! comparisons to other methods of benefit-risk, i.e. win-ratio or as alternative to composite outcome 
-
 - check de Leon & Zhu ANOVA extensions for mixed discrete and continuous data cited in de Leon
 - Cunanan & Koopmeiners Evaluating the performance of copula models in phase I-II clinical trials under model misspecification
-
-outline potential avenues for future research 
 -->
 
 While many software resources exist for creation, manipulation, and estimation of basic unconditional copulas (R packages `copula` and `VineCopula`, Python libraries `copulas` <!-- https://pypi.org/project/copulas/--> and `pycopula`,<!-- https://maximejumelle.github.io/pycopula/build/html/--> MATLAB Statistics and Machine Learning Toolbox and Multivariate Copula Analysis Toolbox<!--(doi:10.1002/2016WR020242)-->, SAS PROC COPULA) there is a lack of software to perform general purpose conditional copula regression modeling which necessitates writing ad hoc code for each application. This requirement creates a barrier to wider adoption and exploration of these models in clinical trials but also presents an opportunity for useful contributions. The need for more accessible software for Bayesian copula modeling is especially acute as there are fewer off-the-shelf options and the analyst must handle with model specification in addition to priors and potentially more complex methods to sample the posterior. 
 
 Copulas are a valuable tool for the study of multivariate data collected for clinical trials. They are unique among joint modeling approaches for several reasons, including: the ability to separately specify the marginal models and the dependence model while maintaining the marginal parameter interpretations; flexible, transformation-invariant and interpretable dependence structures; and symmetric treatment of the outcomes of interest. Despite these advantages, their potential in clinical trials has not been fully realized due to gaps in knowledge about when they are most beneficial and a dearth of user-friendly software which creates a challenge for implementation. Future research addressing these areas will provide a valuable contribution to the literature on design and analysis of clinical trials data.
 
-<!--
-lack of understanding about circumstances where they are bst and dearth of user-friendly code )
-
-produce flexible multivariate models by separating the specification of the margins from the copula while maintaining standard marginal interpretations.  
-
-While copulas are only one method of joint modeling, they are a valuable tool to produce flexible multivariate models by separating the specification of the margins from the copula while maintaining standard marginal interpretations.  
-
-use autodifferentiation [ref Baydin]
-
-[commensurate priors]
-
-For example, adaptive trials, sharing information on historical controls or between populations (ped vs adult, different countries or regions) [commensurate priors]
-
-... can include information from a range of sources including previous related studies, pre-clinical models, elicited clinical expertise, or observational data sources, although these extensions have not been well explored in the context of copula models.
-
-Another area - computational 
-
-sep marg from dep maintain interpretation
-flexible dependence structures 
-fully parametric
-treat data symmetrically
-
--->
-
-<!-- for platform designs/adaptive are changes based on efficacy and safety?? -->
-
-<!-- bootstrap copulas -->

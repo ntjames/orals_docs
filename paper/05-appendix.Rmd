@@ -32,11 +32,7 @@ M & = &(-1)^{2} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mat
 \end{eqnarray}
 
 <!--
-Meester example with binary bivariate data is of this form
-
-$(-1)^{\#\{\diamond_j=-\}} C_{\theta}(F_1(y_{i1}^{\diamond_1};\mathbf{\gamma}_1),F_d(y_{i2}^{\diamond_2};\mathbf{\gamma}_2)$
-
-$\sum_{(\diamond_1 \cdots \diamond_d) \in \{-,+\}^d } (-1)^{\#\{\diamond_j=-\}} C_{\theta}(F_1(y_{i1}^{\diamond_1};\mathbf{\gamma}_1),\ldots,F_d(y_{id}^{\diamond_d};\mathbf{\gamma}_d))$ 
+Meester example with binary bivariate data has this form
 -->
 
 * Likelihood for mixed margins
@@ -78,7 +74,7 @@ Where the first term is 0 since $C_{\theta,1}(u_1)=\lim_{u_2 \to 1} C_{\theta}(u
 * Benefit-Risk MCMC model diagnostics
 
 ```{r br-diag1, cache=TRUE}
-#marginal model diagnostics
+## marginal model diagnostics
 #http://mc-stan.org/bayesplot/
 
 print(fit0a, probs=c(0.025, 0.975))
@@ -90,7 +86,7 @@ stan_trace(fit0b)
 ```
 
 ```{r br-diag2, cache=TRUE}
-#joint model diagnostics
+## joint model diagnostics
 print(br_fit, probs=c(0.025, 0.975))
 br_posterior <- extract(br_fit, inc_warmup = TRUE, permuted = FALSE)
 
