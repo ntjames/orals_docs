@@ -1,0 +1,17 @@
+base
+copula
+knitr
+kableExtra
+magrittr
+ggplot2
+StanHeaders
+rstan
+plotly
+bayesplot
+ggExtra
+emo
+htmlwidgets
+widgetframe
+shiny
+xaringan
+bindrcpp
