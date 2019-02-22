@@ -53,23 +53,37 @@ many examples of this kind of data
 -> conclusion and future avenues for research
 -->
 
+<!--
+I'd like to thank ...
+-->
+
 # Introduction
 
 .font160[Clinical Trials with _Multivariate Outcomes_] 
+
+???
+
+The primary focus of my talk is clinical trials with multivariate outcomes. I'll give some background on these outcomes and several approaches that are used to analyze them. 
+
+Each approach has limitations and the main question for the talk is "How can we analyze multivariate clinical trial outcomes jointly while avoiding the limitations of these approaches?"
+
+I'll describe an alternative modeling framework using functions called copulas and provide details on this method before presenting a more in-depth application.
+
+Finally, I'll conclude by summarizing the characteristics of the copula framework and discussing avenues for future research.
 
 --
 
 .font140[
 .pull-left[
-- Efficacy-Toxicity or Benefit-Risk
-- Co-primary Endpoints
-- Multiple Adverse Events
+- Benefit-risk or efficacy-toxicity 
+- Co-primary endpoints
+- Multiple adverse events
 ]
 
 .pull-right[
 - Longitudinal/repeated measures data
 - Clustered data
-- Surrogate and True endpoints
+- Surrogate and true endpoints
 ]
 ]
 
@@ -95,14 +109,14 @@ many examples of this kind of data
 
 --
 
-.font160[_Joint_ models have several advantages compared to performing separate analyses for each outcome]
+.font160[What are the advantages of _joint models_ compared to performing separate analyses for each outcome?]
 
 ---
 
 # Joint Models
 
-.font130[
-Answer questions involving combinations of interrelated outcomes while accounting for dependence
+.font150[
+Answer questions involving _combinations of outcomes_ while accounting for dependence
 
 - "What is probability that intervention has specified effectiveness <i>or</i> risk of adverse events is low?"
 - "Is the intervention efficacious for three co-primary endpoints simultaneously?"
@@ -110,37 +124,35 @@ Answer questions involving combinations of interrelated outcomes while accountin
 
 --
 
-.font130[
-Answer questions about dependence itself
-- Compare two drugs with identical efficacy and safety on average
-- drug with weaker positive relationship preferred; equivalent benefit at lower risk
+.font150[
+Answer questions about _dependence_ itself  
+- For two drugs with the same average efficacy and safety, weaker positive relationship preferred; equivalent benefit at lower risk 
 ]
 
 --
 
-.font130[
-Improve estimates by borrowing information from correlated outcomes
+.font150[
+Improve estimates by _borrowing information_ from correlated outcomes
 ]
 
---
-.font130[
+???
+
 Overall, joint models provide a more complete picture of how the intervention works in multiple dimensions
-]
+
 
 ---
 
 # Joint Models
 
-## Multivariate normal regression
+## Multivariate Normal Regression
 
 <!-- aka General linear models or multivariate linear models -->
-
 <!-- - Multivariate extension of univariate simple or multiple linear regression -->
 
 .font150[
 - Assumes multivariate normal model to explain correlation between outcomes
 
-`r emo::ji("x")` Limitations: All outcomes must be normal, rigid dependence structure 
+`r emo::ji("x")` Limitations: All outcomes must be normal; rigid dependence structure 
 ]
 
 --
@@ -152,49 +164,60 @@ Overall, joint models provide a more complete picture of how the intervention wo
 .font150[
 - Uses random effects to explain correlation between outcomes
 
-`r emo::ji("x")` Limitation: outcome model parameters have subject-specific, not population-average, interpretation
+`r emo::ji("x")` Limitation: Outcome model parameters have subject-specific, not population-average interpretation
 ]
 
 ---
 
 # Joint Models
 
-## Generalized Estimating Equations (GEE)
+## Generalized Estimating Equations
 
+<!-- (quasi-likelihood) -->
 <!-- `r emo::ji("check")` Accommodates non-normal outcomes -->
 
 .font150[
-- Consistent estimation of mean model without specifying complete distribution (quasi-likelihood)
+- Consistent estimation of mean model without specifying complete distribution
 
-`r emo::ji("x")` Limitations: No joint distribution, can't answer questions about simultaneous outcomes or dependence structure or use likelihood-based methods, e.g. AIC
+`r emo::ji("x")` Limitations: No multivariate distribution; can't use likelihood-based methods
 ]
 
 --
 
-## Factorization models
+## Factorization Models
 
 .font150[
-- Partition model into conditional and unconditional components $P(Y_1|Y_2)P(Y_2)$ 
+- Partition model into conditional and unconditional components 
+<!-- $P(Y_1|Y_2)P(Y_2)$ --> 
 
-`r emo::ji("x")` Limitations: outcomes treated asymmetrically; hard to extend to higher dimensions
+`r emo::ji("x")` Limitations: Outcomes treated asymmetrically; hard to extend to higher dimensions
+]
+
+---
+class: center, middle, clear
+
+.font240[
+
+> How can we analyze multivariate clinical trial outcomes jointly while avoiding the limitations of these models?
+
 ]
 
 ---
 
 # Copula Models
 
-.font150[
-Copulas as an alternative for joint modeling
+.font160[
+Copulas are an alternative that address these limitations
 
-  `r emo::ji("check")` Normal or non-normal outcomes 
+> `r emo::ji("check")` Normal or non-normal outcomes 
 
-  `r emo::ji("check")` Flexible dependence structures 
+> `r emo::ji("check")` Flexible dependence structures 
 
-  `r emo::ji("check")` Model parameters maintain interpretation
+> `r emo::ji("check")` Model parameters maintain interpretation
 
-  `r emo::ji("check")` Full joint distribution
-
-  `r emo::ji("check")` Extends to higher dimensions
+> `r emo::ji("check")` Full multivariate distribution
+  
+> `r emo::ji("check")` Extends to higher dimensions
 ]
 
 <!--
@@ -205,18 +228,14 @@ So copulas have some benefits over other multivariate models. What are they and 
 
 # Copula Models
 
-<!--
-Before can define copulas, review prob results and define notation 
--->
-
-## Distribution functions
+## Distribution Functions
 
 .font140[
 For random variable $Y_1$:
 
-- The distribution function is $F_{1}(y)=Pr(Y_1 \le y)$ for any $y$
+- The _distribution function_ is $F_{1}(y)=Pr(Y_1 \le y)$ for any $y$
 
-- The quantile function is $F_{1}^{-1}(q)=\inf \{y: F_1(y) \ge q\}$
+- The _quantile function_ is $F_{1}^{-1}(q)=\inf \{y: F_1(y) \ge q\}$ for $0 < q < 1$
 ]
 
 --
@@ -224,27 +243,38 @@ For random variable $Y_1$:
 .font140[
 Distribution functions define families indexed by one or more parameters
 
-- Ex. Normal distribution has two parameters, mean $\mu$ and variance $\sigma^2$
+- Example: Normal distribution family has two parameters, mean $\mu$ and variance $\sigma^2$
 
 - Use $\gamma_1$ to represent all the parameters of the distribution: $F_1(y;\gamma_1)$
 ]
+
+???
+
+Before we define copulas, we need to briefly review some definitions and define notation 
+
 
 ---
 
 # Copula Models
 
-## Probability integral transformation
+## Probability Integral Transformation
 
 .font140[
-For continuous random variable $Y_1$:
+For _continuous_ random variable $Y_1$:
 
-Applying the distribution function to the variable itself results in a standard uniform distribution
+Applying the distribution function to the variable itself yields a standard uniform distribution
 
 $$F_1(Y_1)=U \sim Unif(0,1)$$
 
 Applying the quantile function to a standard uniform random variable results in the original random variable
 $$F_1^{-1}(U)=F_1^{-1}(F_1(Y_1))=Y_1$$
 ]
+
+
+???
+If Y_1 is a random variable representing blood pressure, the distribution function gives the probability of blood pressure less than or equal to little y
+
+The quantile function gives the value of blood pressure associated with a particular quantile, e.g. it answers the question what value of blood pressure is at the 90th percentile  
 
 <!--
 $F_1(y_1)$ can mean 1) $Pr(Y_1 \le y_1)$ for _any_ $y_1$ or 2) The probability integral transform, i.e. transform the observed value $y_1$ of random variable $Y_1$ using the df, $F_1$
@@ -270,7 +300,7 @@ Let $Y_j$ be the random variable representing the $j^{th}$ outcome for $j=1,\ldo
 --
 
 .font140[
-The joint or multivariate distribution function is:
+The _multivariate distribution function_ is:
 $$H(y_1,\ldots,y_d)=Pr(Y_1 \le y_1,\ldots,Y_d \le y_d)$$
 ]
 
@@ -280,24 +310,24 @@ $$H(y_1,\ldots,y_d)=Pr(Y_1 \le y_1,\ldots,Y_d \le y_d)$$
 
 ## Marginal Distributions
 
-.font140[
+.font150[
 Can always recover individual $F_j$ from a given $H$:
 - $F_1(y_1)=\lim_\limits{y_2 \to \infty}H(y_1,y_2)=Pr(Y_1 \le y_1, Y_2 \le \infty)$
 - $F_2(y_2)=\lim_\limits{y_1 \to \infty}H(y_1,y_2)=Pr(Y_1 \le \infty, Y_2 \le y_2)$
-- called _marginal_ distributions
+- $F_1$ and $F_2$ are called the marginal distributions or _margins_
 ]
 
 --
 
-.font140[
-Given $F_1,\ldots,F_d$, how to get $H$?
+.font150[
+Given the margins $F_1,\ldots,F_d$, how can we get the multivariate distribution $H$?
 ]
 
 ---
 
 # Copula Models
 
-## Sklar's theorem
+## Sklar's Theorem
 
 .font140[
 For multivariate distribution $H$ with margins $F_1,\ldots,F_d$, the _copula_ associated with $H$ is a distribution function $C: [0,1]^d \to [0,1]$ with uniform margins that satisfies:
@@ -317,9 +347,7 @@ $$H(F_1^{-1}(u_1),\ldots,F_d^{-1}(u_d)) = C(u_1,\ldots, u_d)\, \text{ for } u_1,
 --
 
 .font140[
-If $H$ has one or more discrete margins, the copula is only unique on the set:
-
-$$Range(F_1) \times \cdots Range(F_d)\, \text{ where } Range(F_j)=\{F_j(x): x \in \mathbb{R} \}$$
+If $H$ has one or more discrete margins, the copula is <i>not</i> unique
 ]
 
 ---
@@ -329,15 +357,15 @@ $$Range(F_1) \times \cdots Range(F_d)\, \text{ where } Range(F_j)=\{F_j(x): x \i
 ## Main Ideas 
 
 .font140[
-- Continuous univariate distributions along with a copula uniquely define a multivariate distribution
+- Continuous margins $F_1,\ldots,F_d$, and a copula $C$ uniquely define a joint multivariate distribution, $H$
 
-- Separate specification of outcome models, $F_1,\ldots,F_d$, and dependence model, $C$
+- Margins and copula are specified separately
 
-- Different copulas will produce different multivariate distributions, $H$
+- Different copulas will produce different multivariate distributions
 
-- Copula is not unique with discrete margins, special adjustments and changes in interpretation are required
+- Use caution with discrete margins since the copula is not unique, additional considerations required
 
-Use $\theta$ to represent all the copula parameters: $C_{\theta}(u_1,\ldots, u_d)$
+- Copulas are indexed by one or more parameters; use $\theta$ to represent the copula parameters: $C_{\theta}(u_1,\ldots, u_d)$
 ]
 
 <!--
@@ -349,11 +377,11 @@ random variables $Y_1$ and $Y_2$ with observed values $y_1,y_2$ and distribution
 # Copula Models: .font70[Example 1]
 
 .font130[
-Two continuous univariate random variables $Y_1$ and $Y_2$
+$Y_1$ and $Y_2$ are continuous univariate random variables 
 
-- $Y_1$ represents efficacy: standard normal distribution $F_1$, i.e mean=0 and variance=1
+- $Y_1$ represents efficacy and has standard normal distribution $F_1$, i.e. mean=0 and variance=1
 
-- $Y_2$ represents adverse event rate: gamma distribution $F_2$ with shape=4 and rate=1
+- $Y_2$ represents adverse event rate and has gamma distribution $F_2$ with shape=4 and rate=1
 ]
 
 --
@@ -393,11 +421,11 @@ Contour plot shows bivariate density; univariate densities along margins
 - Gumbel has more density in top right quadrant
 - Clayton has more density in bottom left quadrant
 
-Marginal interpretation same for both
+Marginal probabilities are identical for both
 
 - $Pr(\text{Efficacy}>0)=0.5$
 
-Joint interpretation depends on copula model
+Joint probabilities depend on copula model
 
 - $Pr(\text{Efficacy}>1 \text{ and } \text{AE rate}>4)$
   
@@ -545,7 +573,7 @@ $$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(u_1),\Phi^{-1}(u_2)|\rho)$$
 
 - $\Phi_2$ is the bivariate standard normal distribution function with correlation coefficient $\rho$
 
-- $\Phi^{-1}$ is the standard normal quantile function
+- $\Phi^{-1}$ is the standard normal quantile function and $\Phi$ is the standard normal distribution function
 ]
 
 --
@@ -558,15 +586,16 @@ $$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(\Phi(y_1)),\Phi^{-1}(\Phi(y_2))|\rho
 --
 
 .font120[
-- If margins are not standard normal, $H$ is _not_ bivariate normal:
+- If margins are not standard normal, $H$ is <i>not</i> bivariate normal:
 $$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(F_1(y_1)),\Phi^{-1}(F_2(y_2))|\rho)=H(y_1,y_2)$$
 ]
 
 --
 
 .font120[
-- Dependence between margins - contained in copula - is identical for both scenarios
+- Dependence between margins - contained in copula - is identical under both scenarios 
 ]
+
 
 ---
 
@@ -575,15 +604,28 @@ $$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(F_1(y_1)),\Phi^{-1}(F_2(y_2))|\rho)=
 ## Independence and Bounds
 
 .font140[
-Independence copula: $C(u_1,\ldots,u_d)=\prod_{j=1}^{d} u_j$ for $u_1,\ldots,u_d \in [0,1]^d$
+The independence copula, $\Pi$ represents _no dependence_ : $\Pi(u_1,\ldots,u_d)=\prod_{j=1}^{d} u_j$
+- $Y_1,\ldots,Y_d$ with copula $C$ are mutually independent if and only if $C = \Pi$
+]
 
-Upper bound defines _perfect positive dependence_:
+--
+
+.font140[
+For any $d$ the copula upper bound, $M$ represents _perfect positive dependence_ and for $d=2$ the copula lower bound, $W$ represents _perfect negative dependence_ 
+- For all copulas $W(u_1,\ldots,u_d) \le C(u_1,\ldots,u_d) \le M(u_1,\ldots,u_d)$
+<!--
 $$M(u_1,\ldots,u_d)= \min \{u_1,\ldots,u_d\}$$ 
-
-Lower bound defines _perfect negative dependence_ for $d=2$:
 $$W(u_1,\ldots,u_d)=\max \{\sum_{j=1}^d u_j -d + 1, 0\}$$ 
+-->
 
-For any copula, $C$, $W(u_1,\ldots,u_d) \le C(u_1,\ldots,u_d) \le M(u_1,\ldots,u_d)$
+]
+
+--
+
+.font150[
+.center[
+`r emo::ji("eight_spoked_asterisk")` A wide range of dependence can be expressed in terms of copulas `r emo::ji("eight_spoked_asterisk")`
+]
 ]
 
 ---
@@ -593,47 +635,64 @@ For any copula, $C$, $W(u_1,\ldots,u_d) \le C(u_1,\ldots,u_d) \le M(u_1,\ldots,u
 ## Invariance
 
 .font130[
-For $(Y_1,\ldots,Y_d) \sim H$ with continuous margins $F_1,\ldots,F_d$ and copula $C$ if $T_j$ are strictly increasing transformations then 
-$(T_1(Y_1),\ldots,T_d(Y_d))$ also has copula $C$
+For $(Y_1,\ldots,Y_d) \sim H$ with continuous margins $F_1,\ldots,F_d$ and copula $C$ if $T_1,\ldots, T_d$ are strictly increasing _transformations_ then 
+$T_1(Y_1),\ldots,T_d(Y_d)$ also has copula $C$
 ]
 
 --
 
 .font130[
-Ex. The copula measuring dependence between $Y_1$ and $Y_2$ is same the same as copula measuring dependence between:
+Example: The copula measuring dependence between $Y_1$ and $Y_2$ is same the same as copula measuring dependence between:  
+.pull-left[
 - $\log(Y_1)$ and $\log(Y_2)$ 
 - $\log(Y_1)$ and $Y_2$ 
+]
+.pull-right[
 - $Y_1$ and $\sqrt Y_2$
 - etc.
+]
+]
 
-Dependence measure not affected by scale on which measurements are made
+--
+
+.center[
+.font140[
+`r emo::ji("eight_spoked_asterisk")`<i>&#x202F;</i>Copulas are unaffected by measurement scale or strictly increasing transformations `r emo::ji("eight_spoked_asterisk")`
+]
 ]
 
 ---
 
 # Copula Concepts
 
-## Measures of Association
+## Dependence properties
 
-.font120[
-Many well known _concordance measures_ can be expressed in terms of copulas
+.font140[
+Many well known _concordance measures_ such as Spearman's $\rho$ and Kendall's $\tau$ can be expressed in terms of copulas
 
+<!--
 - Spearman's $\rho = 12 \iint_{[0,1]^2} [C(u_1,u_2) - \Pi(u_1,u_2)]\, du_1du_2$
-
 - Kendall's $\tau = 4 \iint_{[0,1]^2}C(u_1, u_2)\, dC(u_1, u_2) -1$
 
-Pearson's correlation coefficent cannot be expressed in terms of copula alone. 
+Pearson's correlation coefficent cannot be expressed in terms of copula alone 
 
-<!--It has several drawbacks as general measure of association (only measures linear dependence, does not exist for every random vector $(Y_1, Y_2)$, not invariant to increasing transformations)-->
+It has several drawbacks as general measure of association (only measures linear dependence, does not exist for every random vector $(Y_1, Y_2)$, not invariant to increasing transformations)-->
+
+Copulas can also be used to describe more complex dependence relationships such as
+ _symmetry_, _tail dependence_, and _exchangeability_
+
+<!--
+is another dependence measure often studied in the context of copulas
+- Multivariate densities with heavier tails place higher probability on extreme events occurring simultaneously
+-->
 ]
 
 --
-.font120[
-_Tail dependence_ is another dependence measure often studied in the context of copulas
 
-- Multivariate densities with heavier tails place higher probability on extreme events occurring simultaneously
-
-Understanding these dependence properties is important to guide choice of appropriate copulas to model these properties
+.center[
+.font150[
+`r emo::ji("eight_spoked_asterisk")` Understanding dependence properties helps guide choice of copula models `r emo::ji("eight_spoked_asterisk")`
+]
 ]
 ---
 
@@ -704,19 +763,21 @@ par(op)
 .font140[
 Collect $n$ multivariate observations $(y_{i1},\ldots,y_{id}),$ $i=1,\ldots,n$ and infer the marginal and copula parameter estimates or posterior distributions. For continuous margins:
 
-- copula density $c_{\theta}(u_1,\ldots,u_d)=\frac{\partial^d C_{\theta}(u_1,\ldots,u_d)}{\partial u_1 \cdots \partial u_d}$
+- Copula density is $\color{blue}{c_{\theta}(u_1,\ldots,u_d)}=\frac{\partial^d C_{\theta}(u_1,\ldots,u_d)}{\partial u_1 \cdots \partial u_d}$
 
-- marginal density $f_j(y_j;\gamma_j)=\frac{d}{dy_j}F_j(y_j;\gamma_j)$
-
-- multivariate density $h(y_1,\ldots,y_d)= c(F_1(y_1;\gamma_1),\ldots,F_d(y_d;\gamma_d)) \times \prod_{j=1}^{d} f_j(y_j;\gamma_j)$
+- Marginal density is $\color{red}{f_j(y_j;\gamma_j)}=\frac{d}{dy_j}F_j(y_j;\gamma_j)$
 ]
+
+<!--
+- _Multivariate density_ $h(y_1,\ldots,y_d)= c_{\theta}(F_1(y_1;\gamma_1),\ldots,F_d(y_d;\gamma_d)) \times \prod_{j=1}^{d} f_j(y_j;\gamma_j)$
+-->
 
 --
 
 .font140[
-The log-likelihood is:
+The _log-likelihood_ for all $n$ observations is:
 
-$$\ell(\gamma_1,\ldots,\gamma_d,\theta)=\sum_{i=1}^{n}\{\log c_{\theta}(F_1(y_{i1};\gamma_1),\ldots,F_d(y_{id};\gamma_d)) + \sum_{j=1}^d \log f_j(y_{ij};\gamma_j) \}$$
+$$\ell(\gamma_1,\ldots,\gamma_d,\theta)=\sum_{i=1}^{n}\{\log \color{blue}{c_{\theta}(F_1(y_{i1};\gamma_1),\ldots,F_d(y_{id};\gamma_d))} + \sum_{j=1}^d \log \color{red}{f_j(y_{ij};\gamma_j)} \}$$
 ]
 
 ---
@@ -726,7 +787,7 @@ $$\ell(\gamma_1,\ldots,\gamma_d,\theta)=\sum_{i=1}^{n}\{\log c_{\theta}(F_1(y_{i
 ## Frequentist
 
 .font140[
-Maximize likelihood with respect to parameters to get MLEs: $(\hat{\gamma}_1,\ldots,\hat{\gamma}_d,\hat{\theta})$
+Maximize likelihood with respect to parameters to get estimates $(\hat{\gamma}_1,\ldots,\hat{\gamma}_d,\hat{\theta})$
 
 Use asymptotic approximation or bootstrap to obtain standard errors
 ]
@@ -736,9 +797,9 @@ Use asymptotic approximation or bootstrap to obtain standard errors
 ## Bayesian
 
 .font140[
-Use Bayes' theorem to combine likelihood with priors for marginal and copula parameters and get posterior distribution of parameters
+Use Bayes' theorem to combine likelihood with priors for marginal and copula parameters and get posterior distribution of parameters given data and priors
 
-Will usually need to use Markov Chain Monte Carlo to sample from posterior distribution
+Will often need to use Markov Chain Monte Carlo (MCMC) to sample from posterior distribution
 ]
 
 ---
@@ -746,13 +807,13 @@ Will usually need to use Markov Chain Monte Carlo to sample from posterior distr
 # Copula Regression
 
 .font120[
-Extend basic theory to include covariates for groups being compared (treatments, dose levels, etc.)
+Extend basic theory to include _covariates_ for groups being compared (treatments, dose levels, etc.)
 
-Marginal calibration function
+Marginal regression function
 
-- Relate observed vector $x_j$ of $p_j$ covariates to parameters of $F_j$:
+- Relate observed vector $x_j$ of $p_j$ covariates to parameters of $F_j$
 
-- Ex. $\gamma_{j,x_j}=\varphi(x_j)=E[Y_j|x_j]=\beta_{j0}+ \sum_{k=1}^{p_j} \beta_{jk} x_{jk}$
+- Example: $\mu_{j,x_j}=\varphi(x_j)=E[Y_j|x_j]=\beta_{j0}+ \sum_{k=1}^{p_j} \beta_{jk} x_{jk}$
 
 <!-- - Marginal regression model $F_j(y_j;\varphi_j(x_j))$ -->
 ]
@@ -760,79 +821,65 @@ Marginal calibration function
 --
 
 .font120[
-Copula calibration function
+Copula regression function
 
 - Relate observed vector of covariates to copula parameters
-$\theta_{x}=\zeta(x)$
+$\theta_{x}=\zeta(x)=\alpha_{0}+ \sum_{k=1}^{p} \alpha_{k} x_{k}$
 ]
 
 --
 
 .font120[
-The log-likelihood for copula regression model is:
-$$\ell(\beta_1,\ldots,\beta_d,\theta) =\sum_{i=1}^{n}\{\log c_{\theta_{x}}(F_1(y_{i1};\varphi_1(x_1)),\ldots,F_d(y_{id};\varphi_d(x_d))) + \sum_{j=1}^d \log f_j(y_{ij};\varphi_j(x_j))\}$$
+Log-likelihood for continuous margins including both regression models is:
+$$\ell(\color{Turquoise}{\beta_1,\ldots,\beta_d,\alpha}) =\sum_{i=1}^{n}\{\log c_{\color{Turquoise}{\zeta(x)}}(F_1(y_{i1};\color{Turquoise}{\varphi_1(x_1)}),\ldots,F_d(y_{id};\color{Turquoise}{\varphi_d(x_d)})) + \sum_{j=1}^d \log f_j(y_{ij};\color{Turquoise}{\varphi_j(x_j)})\}$$
 ]
 
 ---
 
-# Copula Model Extensions
-
-.font130[
-Vine copulas - multivariate dependence structures for $>$ 2 dimensions by representing $d$-dimensional copula in terms of $d \choose 2$ bivariate copulas
-- Ex. Longitudinal data collected at many time points
-
-Multivariate survival data - models for multiple time-to-event outcomes accounting for censoring  
-- Ex. Time to death from cardiovascular causes and time to hospitalization for heart failure
-
-Joint longitudinal/survival data - combined analysis of repeated outcomes over time and time-to-event outcomes 
-- Account for within-subject dependence, missingness/dropout, and censoring
-- Ex. Disease biomarker and disease-free survival time
-]
-
----
-
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Model
 
 .font130[
-- Two-arm parallel design with $n=200$ 
-- 1:1 randomization to placebo ( $t=1$ ) or active drug ( $t=2$ ) indicated by vector $x_i =(x_{i1},x_{i2})$
+- Two-arm parallel design with sample size $n=200$ for individuals $i=1,\ldots,n$
+- 1:1 randomization to placebo $(t=1)$ or active drug $(t=2)$ indicated by vector $x_i =(x_{i1},x_{i2})$
 
 - Bivariate response is $y_i=(y_{i1},y_{i2})$:
   + $y_{i1}$ is continuous efficacy outcome, normal with mean $\mu_t$ and variance $\sigma_t^2$ 
   + $y_{i2}$ is binary adverse event outcome, Bernoulli with parameter $p_t$
 
-- OLS used for efficacy outcome, probit regression used for safety outcome
+- Linear regression used for efficacy outcome, probit regression used for safety outcome
 
-- Normal copula allowing for different dependence by treatment couples marginal outcome models together 
+- Normal copula used to couple marginal outcome models together 
 ]
 
 ---
 
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Model
 
 .font120[
-$$y_{i1} \sim Normal(\mu_{t},\sigma_{t}), \,\, \mu_{t} = x_{i1}\beta_{11} + x_{i2}\beta_{12}, \,\, \sigma_{t} = x_{i1}s_1 + x_{i2}s_2\\
+\begin{eqnarray*}
+\text{Efficacy model:} & \;\;& y_{i1} \sim Normal(\mu_{t},\sigma_{t}) \;\; \mu_{t} = x_{i1}\color{RoyalBlue}{\beta_{11}} + x_{i2}\color{RoyalBlue}{\beta_{12}} \;\; \sigma_{t} = x_{i1}\color{red}{s_1} + x_{i2}\color{red}{s_2}\\
 \\
-y_{i2} \sim Bernoulli(p_{t}), \,\, \Phi^{-1}(p_i) = x_{i1}\beta_{21} + x_{i2}\beta_{22}\\
+\text{Safety model:} & \;\;& y_{i2} \sim Bernoulli(p_{t}) \;\; \Phi^{-1}(p_i) = x_{i1}\color{RoyalBlue}{\beta_{21}} + x_{i2}\color{RoyalBlue}{\beta_{22}}\\
 \\
-H_{\theta_{t}}(y_{i1},y_{i2})=C_{\theta_{t}}^{Norm}(F_1(y_{i1};\mu_{t},\sigma_{t}),F_2(y_{i2};p_{t})), \,\,
-\theta_{t} = x_{i1}\omega_{1} + x_{i2} \omega_{2}$$
+\text{Dependence model:} & \;\; & H_{\theta_{t}}(y_{i1},y_{i2})=C_{\theta_{t}}^{Norm}(F_1(y_{i1};\mu_{t},\sigma_{t}),F_2(y_{i2};p_{t})) \;\;
+\color{orange}{\theta_{t}} = x_{i1}\color{SeaGreen}{\omega_{1}} + x_{i2} \color{SeaGreen}{\omega_{2}}
+\end{eqnarray*}
+]
+.font110[
 for treatment $t$:
-- $\beta_{jt}$ are effect parameters for marginal model
-- $s_t$ are dispersion parameters
-- $\omega_t$ are copula dependency parameters
-- $\theta_t$ is the poly-serial correlation (i.e. correlation between normal outcome and latent normal underlying binary outcome)
-  + Relates to correlation between normal and binary outcome: 
-$\rho_t = Corr(y_{i1},y_{i2}) = \theta_t \phi[\Phi^{-1}(p_t)]/\sqrt{p_t(1-p_t)}$
+- $\color{RoyalBlue}{\beta_{jt}}$ are effect parameters for marginal model
+- $\color{red}{s_t}$ are dispersion parameters
+- $\color{SeaGreen}{\omega_t}$ are copula dependency parameters
+- $\color{orange}{\theta_t}$ is the correlation between the normal efficacy outcome and the latent normal distribution for the binary safety outcome; relates to correlation between normal and binary outcome: $\rho_t = Corr(y_{i1},y_{i2}) = \theta_t \phi[\Phi^{-1}(p_t)]/\sqrt{p_t(1-p_t)}$
 ]
 
 ---
 
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Simulated Data
 
@@ -918,6 +965,8 @@ dat_lab %<>% mutate(treatment=factor(treatment, labels=c("placebo","active")),
                    safety=factor(safety, labels=c("no AE","AE")))
 ```
 
+--
+
 .right-column[
 ```{r br-b, cache=TRUE, fig.show = 'hold', fig.align='center', fig.height=6}
 ggplot(dat_lab, aes(x=efficacy, fill=treatment)) + 
@@ -928,7 +977,7 @@ ggplot(dat_lab, aes(x=efficacy, fill=treatment)) +
 
 ---
 
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Bayesian Inference
 
@@ -939,7 +988,7 @@ Priors:
 - $\theta \sim Unif(-1, 1)$  
 
 .font110[
-Hamiltonian Monte Carlo MCMC algorithm used to draw 8000 posterior samples
+MCMC used to draw 8000 posterior samples
 
 Normal marginal component performs well 
 
@@ -989,13 +1038,13 @@ knitr::kable(br_tab, format="html", escape=TRUE,
 
 ---
 
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Results
 
 .pull-left[
 .font140[
-For normal copula and independence model plot treatment difference for efficacy $(\mu_2-\mu_1)$ against safety $(p_2-p_1)$
+Plot treatment difference for efficacy $(\mu_2-\mu_1)$ against safety $(p_2-p_1)$ for normal copula and independence model 
 
 Marginal histograms nearly identical
 
@@ -1006,8 +1055,12 @@ Positive dependence in treatment differences with normal copula
 .pull-right[
 ```{r br-f, cache=TRUE, echo=FALSE, fig.show = 'hold', fig.align='center', fig.height = 3.25, fig.width = 4.5}
 # scatterplot with histogram margins
-pp <- ggplot(diffs,aes(x=mu_diff,y=p_diff)) + geom_point(color="#23373B", alpha=0.15)  + 
-  xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + ylab(bquote(p[2]-p[1] ~ "(safety)")) +
+pp <- ggplot(diffs,aes(x=mu_diff,y=p_diff)) + 
+  geom_point(color="#23373B", alpha=0.15)  + 
+  geom_hline(aes(yintercept=0.3, color="#EB811B"), size=1, linetype="dashed", show.legend = FALSE) +
+  geom_vline(aes(xintercept=100, color="#EB811B"), size=1, linetype="dashed",  show.legend = FALSE) +
+  xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + 
+  ylab(bquote(p[2]-p[1] ~ "(safety)")) +
   labs(title="Normal copula")+theme(text = element_text(size=20)) 
  
 #+ geom_density2d()
@@ -1019,8 +1072,12 @@ pp_marg
 ```
 
 ```{r br-f-ind, cache=TRUE, echo=FALSE, fig.show = 'hold', fig.align='center', fig.height = 3.25, fig.width = 4.5}
-pp0 <- ggplot(diffs0,aes(x=mu_diff,y=p_diff)) + geom_point(color="#23373B", alpha=0.15) +
-xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + ylab(bquote(p[2]-p[1] ~ "(safety)")) +
+pp0 <- ggplot(diffs0,aes(x=mu_diff,y=p_diff)) + 
+  geom_point(color="#23373B", alpha=0.15) +
+  geom_hline(aes(yintercept=0.3, color="#EB811B"), size=1, linetype="dashed", show.legend = FALSE) +
+  geom_vline(aes(xintercept=100, color="#EB811B"), size=1, linetype="dashed",  show.legend = FALSE) +
+  xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + 
+  ylab(bquote(p[2]-p[1] ~ "(safety)")) +
   labs(title="Independence")+theme(text = element_text(size=20)) 
 
 #  + geom_density2d()
@@ -1034,7 +1091,7 @@ pp_marg0
 
 ---
 
-# Benefit-Risk Analysis
+# Benefit-Risk Analysis (Costa and Drury 2018)
 
 ## Results
 
@@ -1048,7 +1105,7 @@ All pairs along a contour have same POTS
 
 Low POTS for efficacy improvement over 110 and AE risk difference less than 0.1
 
-High POTS for efficacy improvement over 70 and AE risk difference less than 0.6
+High POTS for efficacy improvement over 70 and AE risk difference less than 0.5
 ]
 ]
 
@@ -1074,6 +1131,7 @@ num_cols<-20
 potus_col <- rev(rainbow(20, start = 0/6, end = 4/6))
 ```
 
+<!-- Note: axis titles only render correctly on linux -->
 .pull-right[
 ```{r br-potus-html , cache=TRUE}
 # https://github.com/yihui/xaringan/issues/98
@@ -1091,48 +1149,81 @@ frameWidget(l, width='100%', height='100%')
 
 # Discussion
 
+.font150[
+Copula models are widely applicable in clinical trials with multivariate outcomes
+]
+
+--
+
+.font150[
+- Provide deeper insight into treatment effect across multiple dimensions
+- Facilitate questions involving combinations of outcomes
+- Improve inference by borrowing information from correlated outcomes
+]
+--
+.font150[
+- Overcome limitations of other joint modeling approaches
+  + Separate specification of marginal and dependence model 
+  + Flexible, transformation-invariant and interpretable dependence structures
+  + Parameters maintain marginal model interpretation
+  + Symmetric treatment of outcomes
+  + Extension to variety of outcomes and higher dimensions
+]
+
+
+---
+
+# Copula Model Extensions
+
 .font130[
-Joint models are widely applicable in clinical trials with multiple outcomes
-  - Provide deeper insight into treatment effect across multiple dimensions
-  - Facilitate questions involving combinations of outcomes
-  - Improve inference for margins by borrowing information from correlated outcomes
+Vine copulas - multivariate dependence structures for $>$ 2 dimensions by representing $d$-dimensional copula in terms of bivariate copulas
+- Example: Longitudinal data collected at many time points
 ]
 
 --
 
 .font130[
-Copulas are unique among joint modeling approaches
-  - Separate specification of marginal and dependence model 
-  - Flexible, transformation-invariant and interpretable dependence structures
-  - Parameters maintain marginal model interpretation
-  - Symmetric treatment of outcomes
-  - Extension to variety of outcomes and higher dimensions
+Multivariate survival data - models for multiple time-to-event outcomes accounting for censoring  
+- Example: Time to death from cardiovascular causes and time to hospitalization for heart failure
 ]
+
+--
+
+.font130[
+Joint longitudinal/survival data - combined analysis of repeated outcomes over time and time-to-event outcomes 
+- Account for within-subject dependence, missingness/dropout, and censoring
+- Example: Disease biomarker repeated measures and disease-free survival time
+]
+
 
 ---
 
 # Future Research
 
-.font110[
-Many avenues for future research and contributions exist, especially for Bayesian copula modeling in clinical trials 
+.font120[
+There are many avenues for future research, especially in Bayesian copula regression modeling, that would provide a valuable contribution to the clinical trial literature 
 
-- Structured comparison to other benefit-risk approaches or as alternative for composite outcomes
+- Systematic comparison to other benefit-risk approaches or as an alternative for composite outcomes
 
-- Software for general purpose Bayesian copula regression modeling
+- Development of more flexible, user-friendly software for Bayesian copula regression modeling
 
-- Regulatory agencies, study sponsors, and data safety monitoring boards are often interested in the long-run (frequentist) operating characteristics of Bayesian analyses   
- + Conditions under which Bayesian power for marginal efficacy can be improved using copula models 
- + Sample size and other elements of trial design needed to estimate copula parameters or distinguish copula families for copula regression models
+- Exploration of clinical trial study design for Bayesian copula models
+  + Power and false-positive rate 
+  + Sample size estimation
 
-- Use nested or vine copulas for analysis of large number of outcomes, e.g. Medical Dictionary for Regulatory Activities (MedDRA) adverse event data
+- Analysis of high-dimensional outcomes using nested or vine copulas, e.g. Medical Dictionary for Regulatory Activities (MedDRA) adverse event data
 
-- Incorporating information from historic controls, heterogeneous populations, etc. through priors
+- Incorporation of prior information from historic controls, heterogeneous populations, biosimilar products, etc.
 ]
 
 ---
-class: center, middle
+class: center, middle, clear
 
-.font200[Questions?]
+.font240[
+
+> Copulas are a unique, underutilized tool for the study of multivariate data that avoid the limitations of other joint modeling approaches
+
+]
 
 
 
