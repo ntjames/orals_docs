@@ -1,6 +1,7 @@
-out_dir<-file.path(getwd(),"output")
-
 ## made with bookdown: https://bookdown.org/yihui/bookdown/
+
+# define output directory
+out_dir <- file.path(getwd(),"output")
 
 ## html gitbook
 bookdown::render_book("index.Rmd", "bookdown::gitbook", output_dir = out_dir)

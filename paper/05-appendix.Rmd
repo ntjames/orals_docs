@@ -24,9 +24,9 @@ where the sum is over the set of $2^d$ vectors of size $d$ with elements 0 or 1.
 \} (\#eq:eq-ll-disc)
 \end{equation}
 
-Where $y_{ij}^{+}$ (with $\diamond_j=+$) and $y_{ij}^{-}$ (with $\diamond_j=-$) refer to evaluation as right limits and left limits, respectively. For $d=2$ the innermost sum is over the set $(\diamond_1,\diamond_2) \in \{-,+\}^2$, i.e. $\{(\diamond_1=-,\diamond_2=-),(\diamond_1=-,\diamond_2=+),(\diamond_1=+,\diamond_2=-),(\diamond_1=+,\diamond_2=+) \}$. So the inner sum M is: 
+Where $y_{ij}^{+}$ (with $\diamond_j=+$) and $y_{ij}^{-}$ (with $\diamond_j=-$) refer to evaluation as right limits and left limits, respectively. For $d=2$ the innermost sum is over the set $(\diamond_1,\diamond_2) \in \{-,+\}^2$, i.e. $\{(\diamond_1=-,\diamond_2=-),(\diamond_1=-,\diamond_2=+),(\diamond_1=+,\diamond_2=-),(\diamond_1=+,\diamond_2=+) \}$. So the inner sum $Q$ is: 
 \begin{eqnarray}
-M & = &(-1)^{2} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) + (-1)^{1} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) + \nonumber \\ 
+Q & = &(-1)^{2} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) + (-1)^{1} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) + \nonumber \\ 
  &  & (-1)^{1} C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) + (-1)^{0} C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2))\nonumber \\ 
  & = & C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) - C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) - \nonumber \\  & & C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) +  C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) \nonumber 
 \end{eqnarray}
@@ -94,11 +94,13 @@ color_scheme_set("mix-blue-red")
 mcmc_trace(br_posterior, pars = c("mu[1]", "mu[2]", "p[1]", "p[2]", "rho[1]", "rho[2]",
                                 "theta[1]", "theta[2]"), n_warmup = 1000,
            facet_args = list(nrow = 4, labeller = label_parsed)) 
-  
-mcmc_areas(br_posterior, pars = c("mu[1]", "mu[2]"),
+
+br_posterior2 <- extract(br_fit, inc_warmup = FALSE, permuted = FALSE)
+
+mcmc_areas(br_posterior2, pars = c("mu[1]", "mu[2]"),
            prob = 0.95, prob_outer = 0.99, point_est = "mean")
 
-mcmc_areas(br_posterior, pars = c("p[1]", "p[2]", "rho[1]", "rho[2]",
+mcmc_areas(br_posterior2, pars = c("p[1]", "p[2]", "rho[1]", "rho[2]",
                                   "theta[1]", "theta[2]"),
            prob = 0.95, prob_outer = 0.99, point_est = "mean")
 ```

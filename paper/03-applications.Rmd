@@ -98,7 +98,7 @@ ggplot(dat_lab, aes(x=efficacy, fill=treatment)) +
   geom_histogram(bins=20, alpha=0.75) + facet_grid(treatment~safety)
 ```
 
-Weakly informative normal priors were used for $\beta$ parameters and an inverse gamma with shape and scale parameters both equal to 0.001 was used for $\sigma$. To explore the effect of fitting the joint copula model, each marginal model was also fit separately assuming independence between the outcomes. The R package `rstan` [@stan_development_team_rstan:_2018] was used to draw samples from the posterior distribution using the default No-U-Turn-Sampler (NUTS) MCMC algorithm, an implementation of Hamiltonian Monte Carlo. For each model, 4 chains with 1000 warmup iterations and 2000 sampling iterations were used resulting in 8000 samples from each posterior distribution. Diagnostics for the MCMC samples are shown in the [Technical Supplement](#tech-supp).
+Weakly informative normal priors were used for $\beta$ parameters and an inverse gamma with shape and scale parameters both equal to 0.001 was used for $\sigma$. For the copula parameter $\theta$, a flat uniform distribution on the interval [-1,1] was used. To explore the effect of fitting the joint copula model, each marginal model was also fit separately assuming independence between the outcomes. The R package `rstan` [@stan_development_team_rstan:_2018] was used to draw samples from the posterior distribution using the default No-U-Turn-Sampler (NUTS) MCMC algorithm, an implementation of Hamiltonian Monte Carlo. For each model, 4 chains with 1000 warmup iterations and 2000 sampling iterations were used resulting in 8000 samples from each posterior distribution. Diagnostics for the MCMC samples are shown in the [Technical Supplement](#tech-supp).
 
 ```{r br-c, cache=TRUE}
 ## Stan code for B-R model
@@ -273,7 +273,7 @@ br_fit <- stan(model_code = mod_code, data=mod_data, seed=3578935,
              init=init_list, control = list(adapt_delta = 0.95))
 ```
 
-Table `r if (knitr::is_html_output()) '\\@ref(tab:br-tab-html)' else '\\@ref(tab:br-tab)'` summarizes the mean, Monte Carlo standard error, standard deviation, and quantiles of the posterior distributions for parameters $\mu_t$, $p_t$, $\rho_t$, and $\theta_t$ from the normal copula model. The number of effective samples -- a function of the correlation between sample draws -- along with Rhat -- a measure of MCMC convergence -- are also shown. The model performs reasonable well with the posterior mean estimates close to the true values for all parameters except $\rho_1$.
+Table `r if (knitr::is_html_output()) '\\@ref(tab:br-tab-html)' else '\\@ref(tab:br-tab)'` summarizes the mean, Monte Carlo standard error, standard deviation, and quantiles of the posterior distributions for parameters $\mu_t$, $p_t$, $\rho_t$, and $\theta_t$ from the normal copula model. The number of effective samples -- a function of the correlation between sample draws -- along with Rhat -- a measure of MCMC convergence -- are also shown. The model performs reasonable well with posterior median estimates close to the true values for all parameters except the correlation between outcomes $\rho_1$ and adverse event rate $p_1$ in the placebo group.
 
 ```{r br-tab0, cache=TRUE}
 br_tab <- round(summary(br_fit, pars=c("mu","p","rho","theta"))$summary,2) 
@@ -315,6 +315,8 @@ posterior_p0 <- extract(fit0b, pars=c("p[1]","p[2]"))
 p0 <- do.call(cbind.data.frame, posterior_p0) %>% mutate(p_diff=`p[2]`-`p[1]`)
 
 diffs0<-cbind(mu0,p0) 
+
+save(br_fit, br_tab, diffs, diffs0, file="br_mod_out.RData")
 ```
 
 ```{r br-f-html, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Posterior treatment effect vs. safety risk difference posterior estimates from normal copula model'}
@@ -384,7 +386,7 @@ ggMarginal(pp0, type="histogram", fill = "white",
            xparams = list(bins=25), yparams = list(bins=25))
 ```
 
-One event of interest involving both outcomes is the probability of technical success (POTS). The POTS is the probability that the difference in efficacy is greater than or equal to threshold $\Delta_E$ and the difference in AE risk is less than or equal to threshold $\Delta_S$. Figure `r if (knitr::is_html_output()) '\\@ref(fig:br-h-html)' else '\\@ref(fig:br-h)'` shows the POTS across a range of efficacy and safety values. There is a very low posterior probability that the active drug simultaneously increases efficacy over 110 and has risk difference less than 0.1 (bottom right of plot). Similarly, the probability that the drug improves efficacy by at least 70 and increases risk by 0.6 or less compared to placebo is near $100\%$ (top left corner of plot). All the pairs of efficacy and safety thresholds along a contour have the same POTS and can be used to quantify the risk-benefit tradeoff.
+One event of interest involving both outcomes is the probability of technical success (POTS). The POTS is the probability that the difference in efficacy is greater than or equal to threshold $\Delta_E$ and the difference in AE risk is less than or equal to threshold $\Delta_S$. Figure `r if (knitr::is_html_output()) '\\@ref(fig:br-h-html)' else '\\@ref(fig:br-h)'` shows the POTS across a range of efficacy and safety values. There is a very low posterior probability that the active drug simultaneously increases efficacy over 110 and has risk difference less than 0.1 (bottom right of plot). Similarly, the probability that the drug improves efficacy by at least 70 and increases risk by 0.5 or less compared to placebo is near $100\%$ (top left corner of plot). All the pairs of efficacy and safety thresholds along a contour have the same POTS and can be used to quantify the risk-benefit tradeoff.
 
 Costa and Drury achieved similar results using a generalized linear mixed model (GLMM), but note that the copula approach has several advantages including direct interpretation of the marginal model parameters as population-level estimates (compared to subject level estimates in GLMM) and the flexibility to easily model different dependence structures. 
 
@@ -420,10 +422,11 @@ filled.contour(de, ds, pp, col = potus_col,
                                      axis(1); axis(2)} )
 ```
 
+<!-- Note: axis titles only render correctly on linux -->
 ```{r br-h-html, cache=TRUE, eval=knitr::is_html_output(), fig.cap='Benefit-Risk contour plot for probability of technical success $Pr(\\mu_2-\\mu_1 \\ge \\Delta_E \\text{ and }p_2-p_1 \\le \\Delta_S)$ from normal copula model'}
 plot_ly(x=de, y=ds, z=t(pp), type = "contour", colors=potus_col, 
         contours = list(coloring = 'heatmap', showlabels = TRUE) ) %>%
-  layout(xaxis=list(title ="Delta_E"), yaxis=list(title = "Delta_S"))
+  layout(xaxis=list(title ="Δ<sub>E</sub>"), yaxis=list(title = "Δ<sub>S</sub>"))
 ```
 
 ## Clustered Data
@@ -546,7 +549,7 @@ alp_fun(cl_fit[['par']][[1]],0) # est of spearman's rho
 }
 ```
 
-The maximum likelihood estimates and standard errors were calculated using the `optim` function to minimize the negative log-likelihood. Table `r if (knitr::is_html_output()) '\\@ref(tab:cl-tab-html)' else '\\@ref(tab:cl-tab)'` shows parameter estimates, standard errors and odds ratios for the regression parameters. 
+The maximum likelihood estimates and standard errors were calculated using the `optim` function with the default 'Nelder-Mead' algorithm to minimize the negative log-likelihood. Table `r if (knitr::is_html_output()) '\\@ref(tab:cl-tab-html)' else '\\@ref(tab:cl-tab)'` shows parameter estimates, standard errors and odds ratios for the regression parameters. 
 
 The copula parameter estimate is `r round(cl_fit[['par']][[1]],3)` (equivalent to Spearman's $\rho=$ `r round(alp_fun(cl_fit[['par']][[1]],0),3)`) which represents strong dependence within individuals. The regression coefficients show that both age and treatment have a significant effect. Older children have significantly higher odds of cure compared to those $<2$ yr after adjusting for treatment group (OR and $95\%$ confidence intervals; age 2-5 yr $_{2.24}5.007_{11.21}$; age $\ge$ 6 yr $_{1.65}3.21_{6.25}$). Those treated with amoxicillin had a significantly lower odds of cure compared to cefaclor (OR and $95\%$ confidence interval; $_{0.26}0.454_{0.80}$).
 
@@ -576,7 +579,7 @@ kable(cl_tab, "html", booktabs = TRUE, escape=FALSE,
       col.names = c("Estimate", "SE Estimate", "OR (95\\% CI)"))
 ```
 
-This report has described only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose-finding trials where the jointly estimated toxicity and efficacy curves are combine with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
+This report has described only two applications of copula modeling, but there are several additional settings where these models are used in the context of clinical trials. In addition to survival and longitudinal outcomes, one of the most common applications of copula modeling is in early phase dose-finding trials where the jointly estimated toxicity and efficacy curves are combined with clinical decision rules for maximum tolerable dose and minimal effective dose to find the optimal dose for future studies. Several designs have been proposed and evaluated [@thall_dose-finding_2004; @yin_bayesian_2009; @tao_dose-finding_2013; @cunanan_evaluating_2014] and there has also been work on optimal design for copula models [@denman_design_2011; @perrone_optimal_2016; @deldossi_optimal_2018].  Copulas have also been used to assess the joint distribution between surrogate and true outcomes [@conlon_surrogacy_2017; @renfro_bayesian_2012].
 
 <!--
 -Dose-Finding Based on Efficacy-Toxicity Trade-Offs [@thall_dose-finding_2004]
