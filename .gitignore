@@ -1,3 +1,17 @@
+
+/pres/libs
+
+/paper/*.RData
+/paper/.Rhistory
+/paper/output
+/paper/_bookdown_files
+/paper/zotero_library.bib
+
+## bib and csl file
+*.bib
+*.csl
+*.Rhistory
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -243,6 +257,7 @@ TSWLatexianTemp*
 
 # generated if using elsarticle.cls
 *.spl
+.Rproj.user
 
 20190211_cop_mod_annot\.pdf
 

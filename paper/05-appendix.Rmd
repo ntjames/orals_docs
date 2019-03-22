@@ -1,0 +1,169 @@
+
+# (APPENDIX) Appendix {-}
+
+# Technical Supplement {#tech-supp}
+
+* Probability Integral Transformation
+
+Let $Y$ be a continuous random variable with df $F$ and quantile function $F^{-1}$ and define $F(Y)=Z$ then
+$P(Z \le z) = P(F(Y) \le z)= P(F^{-1}(F(Y)) \le F^{-1}(z)) = P(Y \le F^{-1}(z))=F(F^{-1}(z)) =z$ which is recognized as the df of a standard uniform random variable. So $Z \sim Unif(0,1)$.
+
+* Formula for C-volume with arbitrary $d$
+
+\begin{equation}
+\Delta_{(\mathbf{a},\mathbf{b}]}C=\sum_{i \in \{0,1\}^d} (-1)^{\sum_{j=1}^d i_j}C(a_{1}^{i_1}b_{1}^{1-i_1},\ldots,a_{d}^{i_d}b_{d}^{1-i_d})
+\end{equation}
+where the sum is over the set of $2^d$ vectors of size $d$ with elements 0 or 1. For $d=2$, the set is $\{(i_1=0,i_2=0),(i_1=0,i_2=1),(i_1=1,i_2=0),(i_1=1,i_2=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C=C(b_1,b_2)-C(b_1,a_2)-C(a_1,b_2)+C(a_1,a_2)$. For $d=3$ the set is $\{(i_1=0,i_2=0,i_3=0),(i_1=0,i_2=0,i_3=1),(i_1=0,i_2=1,i_3=0),(i_1=0,i_2=1,i_3=1),(i_1=1,i_2=0,i_3=0),(i_1=1,i_2=0,i_3=1),(i_1=1,i_2=1,i_3=0),(i_1=1,i_2=1,i_3=1)\}$ and the C-volume is $\Delta_{(\mathbf{a},\mathbf{b}]}C= C(b_1,b_2,b_3)- C(b_1,b_2,a_3)- C(b_1,a_2,b_3)+ C(b_1,a_2,a_3)- C(a_1,b_2,b_3)+ C(a_1,b_2,a_3)+ C(a_1,a_2,b_3)- C(a_1,a_2,a_3)$.
+
+* Likelihood for discrete margins  
+
+\begin{equation}
+\ell(\mathbf{\gamma}_1,\ldots,\mathbf{\gamma}_d,\mathbf{\theta}) = \sum_{i=1}^{n} 
+\log \{  
+\sum_{(\diamond_1 \cdots \diamond_d) \in \{-,+\}^d } (-1)^{\#\{\diamond_j=-\}} C_{\theta}(F_1(y_{i1}^{\diamond_1};\mathbf{\gamma}_1),\ldots,F_d(y_{id}^{\diamond_d};\mathbf{\gamma}_d))
+\} (\#eq:eq-ll-disc)
+\end{equation}
+
+Where $y_{ij}^{+}$ (with $\diamond_j=+$) and $y_{ij}^{-}$ (with $\diamond_j=-$) refer to evaluation as right limits and left limits, respectively. For $d=2$ the innermost sum is over the set $(\diamond_1,\diamond_2) \in \{-,+\}^2$, i.e. $\{(\diamond_1=-,\diamond_2=-),(\diamond_1=-,\diamond_2=+),(\diamond_1=+,\diamond_2=-),(\diamond_1=+,\diamond_2=+) \}$. So the inner sum $Q$ is: 
+\begin{eqnarray}
+Q & = &(-1)^{2} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) + (-1)^{1} C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) + \nonumber \\ 
+ &  & (-1)^{1} C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) + (-1)^{0} C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2))\nonumber \\ 
+ & = & C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) - C_{\theta}(F_1(y_{i1}^{-};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) - \nonumber \\  & & C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{-};\mathbf{\gamma}_2)) +  C_{\theta}(F_1(y_{i1}^{+};\mathbf{\gamma}_1),F_d(y_{i2}^{+};\mathbf{\gamma}_2)) \nonumber 
+\end{eqnarray}
+
+<!--
+Meester example with binary bivariate data has this form
+-->
+
+* Likelihood for mixed margins
+
+Let $S_1$ be the set of indices for continuous variables and $S_2$ be indices for discrete variables.
+\begin{eqnarray}
+\ell(\mathbf{\gamma}_1,\ldots,\mathbf{\gamma}_d,\mathbf{\theta}) & = & 
+\sum_{i=1}^{n} \{\log c_{\theta,S_1}(F_j(y_{ij};\mathbf{\gamma}_j): j \in S_1) + 
+ \sum_{j \in S_1} \log f_j(y_{ij};\mathbf{\gamma}_j) (\#eq:eq-ll-mix) \\
+& + & \log  
+\sum_{\diamond_k \in \{-,+\}: k \in S_2} (-1)^{\#\{\diamond_k=-\}} C_{\theta,S_2|S_1}(F_k(y_{ik}^{\diamond_k};\mathbf{\gamma}_k): k \in S_2 |F_j(y_{ij};\mathbf{\gamma}_j) : j \in S_1)
+\} \nonumber 
+\end{eqnarray}
+Where $c_{\theta,S_1}$ is the copula density for the continuous variables (with the discrete margins marginalized out) and $C_{\theta,S_2|S_1}$ is the copula for the discrete margins *conditional* on the continuous margins. The first line of equation \@ref(eq:eq-ll-mix) is similar to the log-likelihood equation for continuous variables in \@ref(eq:eq2-ll), but uses a copula density where the discrete margins have been averaged out. The second line of equation \@ref(eq:eq-ll-mix) is similar to the finite differencing for discrete variables in \@ref(eq:eq-ll-disc) with the modification that the copula is conditioned on the continuous margins.
+
+In addition to the discrete and mixed cases shown above, Joe [@joe_dependence_2015] also provides log-likelihoods for margins with right-censoring and missing-at-random values. Gunawan et al. [@gunawan_mixed_2018] develop extensions for the case when an individual margin has both a discrete and continuous component. 
+
+* Mixed continuous/binary margins likelihood from Benefit-Risk example
+
+For $d=2$, with the first variable continuous and the second variable discrete the form of the log-likelihood from equation \@ref(eq:eq-ll-mix) is:
+\begin{eqnarray}
+\ell(\mathbf{\gamma}_1,\mathbf{\gamma}_2,\mathbf{\theta}) & = & \sum_{i=1}^{n} \{
+\log c_{\theta,1}(F_1(y_{i1};\mathbf{\gamma}_1)) +  \log f_1(y_{i1};\mathbf{\gamma}_1) + \nonumber \\ 
+&  & \log \{ (-1)^{1} C_{\theta,2|1}(F_2(y_{i2}^{-};\mathbf{\gamma}_2)|F_1(y_{i1};\mathbf{\gamma}_1)) + (-1)^{0} C_{\theta,2|1}(F_2(y_{i2}^{+};\mathbf{\gamma}_2)|F_1(y_{i1};\mathbf{\gamma}_1)) \} \}\\
+& = & \sum_{i=1}^{n} \{ 0 + 
+\log f_1(y_{i1};\mathbf{\gamma}_1) + \nonumber \\ 
+&  & \log \{ C_{\theta,2|1}(F_2(y_{i2}^{+};\mathbf{\gamma}_2)|F_1(y_{i1};\mathbf{\gamma}_1)) - C_{\theta,2|1}(F_2(y_{i2}^{-};\mathbf{\gamma}_2)|F_1(y_{i1};\mathbf{\gamma}_1))
+\} \}
+\end{eqnarray}
+
+Where the first term is 0 since $C_{\theta,1}(u_1)=\lim_{u_2 \to 1} C_{\theta}(u_1,u_2)=u_1$ and $c_{\theta,1}(u_1) = \frac{\partial C_{\theta,1}(u_1)}{\partial u_1} = \frac{\partial}{\partial u_1} u_1=1$ so $\log c_{\theta,1}(u_1)=\log 1=0$. Making the appropriate substitutions and simplifications Costa and Drury show this can be written as:
+\begin{eqnarray*}
+\ell_i(\mu_i,\sigma_i,p_i,\theta) & = & (1-y_{i2}) \log\left(f_1(y_{i1}|\mu_i,\sigma_i) \cdot \Phi \left(\frac{\Phi^{-1}[1-p_i]-\theta_t\cdot\Phi^{-1}[F_1(y_{i1}|\mu_i,\sigma_i)] }{\sqrt{1-\theta_t^2}} \right) \right) \nonumber \\
+& & \times y_{i2} \log \left(f_1(y_{i1}|\mu_i,\sigma_i) \cdot \left\{1-\Phi \left(\frac{\Phi^{-1}[1-p_i]-\theta_t\cdot\Phi^{-1}[F_1(y_{i1}|\mu_i,\sigma_i)] }{\sqrt{1-\theta_t^2}} \right) \right\} \right)
+\end{eqnarray*}
+
+\setstretch{1.0}  
+
+* Benefit-Risk MCMC model diagnostics
+
+```{r br-diag1, cache=TRUE}
+## marginal model diagnostics
+#http://mc-stan.org/bayesplot/
+
+print(fit0a, probs=c(0.025, 0.975))
+color_scheme_set("viridis")
+stan_trace(fit0a)
+
+print(fit0b, probs=c(0.025, 0.975))
+stan_trace(fit0b)
+```
+
+```{r br-diag2, cache=TRUE}
+## joint model diagnostics
+print(br_fit, probs=c(0.025, 0.975))
+br_posterior <- extract(br_fit, inc_warmup = TRUE, permuted = FALSE)
+
+color_scheme_set("mix-blue-red")
+mcmc_trace(br_posterior, pars = c("mu[1]", "mu[2]", "p[1]", "p[2]", "rho[1]", "rho[2]",
+                                "theta[1]", "theta[2]"), n_warmup = 1000,
+           facet_args = list(nrow = 4, labeller = label_parsed)) 
+
+br_posterior2 <- extract(br_fit, inc_warmup = FALSE, permuted = FALSE)
+
+mcmc_areas(br_posterior2, pars = c("mu[1]", "mu[2]"),
+           prob = 0.95, prob_outer = 0.99, point_est = "mean")
+
+mcmc_areas(br_posterior2, pars = c("p[1]", "p[2]", "rho[1]", "rho[2]",
+                                  "theta[1]", "theta[2]"),
+           prob = 0.95, prob_outer = 0.99, point_est = "mean")
+```
+
+\setstretch{1.5}  
+
+# R Session Information
+
+```{r sess-info, echo=FALSE}
+#https://stackoverflow.com/questions/49660742/r-reduce-sessioninfo-output
+getS3method("print","sessionInfo")(sessionInfo()[-7])
+```
+
+<!-- Code appendix if knitting to pdf -->
+
+\setstretch{1.0}  
+
+`r if (!knitr::is_html_output()) '# Code Appendix'` 
+
+```{r, ref.label='ex1-a', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='ex1-b', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='norm-cop-ex', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='tail-dep-ex', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-a', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-b', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-c', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-d', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-tab0', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-e', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-f', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-f-ind', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-g', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='br-h', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='cl-a', echo=!knitr::is_html_output(), eval=FALSE}
+```
+
+```{r, ref.label='cl-b', echo=!knitr::is_html_output(), eval=FALSE}
+```

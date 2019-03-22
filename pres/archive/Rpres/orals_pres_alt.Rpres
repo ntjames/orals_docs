@@ -1,0 +1,125 @@
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+# for options see: 
+# https://support.rstudio.com/hc/en-us/sections/200130218-R-Presentations
+# https://support.rstudio.com/hc/en-us/articles/200486468-Authoring-R-Presentations
+# https://rstudio-pubs-static.s3.amazonaws.com/27777_55697c3a476640caa0ad2099fe914ae5.html#/
+# https://support.rstudio.com/hc/en-us/community/posts/203385487-Deleting-Changing-style-of-title-slide-in-rpres
+
+library(plotly)
+library(htmlwidgets)
+```
+
+
+
+Copula Modeling for Clinical Trials
+========================================================
+author: Nathan T. James
+date: February 26, 2019
+autosize: false
+width: 1440
+height: 900
+css: custom.css
+font-family: Gill Sans, Gill Sans MT, Calibri, sans-serif
+transition: fade
+
+Introduction
+========================================================
+type: section
+
+- Background
+- Copulas for Joint Modeling
+- Applications
+
+Background
+========================================================
+type: sub-section
+left: 60%
+```{r}
+summary(cars)
+```
+***
+this is text about the summary
+
+Copulas for Joint Modeling
+========================================================
+type: sub-section
+```{r, echo=FALSE, fig.align='center'}
+plot(cars)
+```
+
+Applications
+========================================================
+type: sub-section
+An interactive plot
+
+```{r, results='hide', echo=FALSE}
+# https://stackoverflow.com/questions/39035308/how-to-include-plotly-in-r-studio-presentations-rpres
+p = plot_ly(z = ~volcano, type = "surface")
+htmlwidgets::saveWidget(as.widget(p), file = "volcano.html")
+```
+<iframe src="volcano.html" style="position:absolute;height:90%;width:100%"></iframe>
+
+Copula Models
+========================================================
+type: section
+
+- Notation, Definitions, and Sklar's Theorem
+- Copula Concepts
+- Inference
+- Copula Regression
+- Extensions
+
+Notation, Definitions, and Sklar's Theorem
+========================================================
+type: sub-section
+
+Copula Concepts
+========================================================
+type: sub-section
+
+
+Inference
+========================================================
+type: sub-section
+
+Inference
+========================================================
+Frequentist
+***
+Bayesian
+
+
+Copula Regression
+========================================================
+type: sub-section
+
+Extensions
+========================================================
+type: sub-section
+
+Applications
+========================================================
+type: section
+
+Benefit-Risk Analysis
+========================================================
+type: sub-section
+some stuff about benefit-risk
+
+
+Benefit-Risk Analysis
+========================================================
+more benefit-risk
+
+
+Clustered Data
+========================================================
+type: sub-section
+
+Discussion and Future Research
+========================================================
+type: section
+

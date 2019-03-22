@@ -1,0 +1,1368 @@
+---
+title: "Copula Modeling for Clinical Trials"
+subtitle: "Doctoral Qualifying Oral Examination <html> <div style='float:left'></div> <hr color='#EB811B' size=1px width=97%> </html>"
+author: "Nathan T. James"
+date: "February 26, 2019"
+output:
+  xaringan::moon_reader:
+    css: [metropolis, metropolis-fonts, "custom.css"]
+    mathjax: "https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_HTMLorMML"
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9'
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(echo = FALSE)
+wd<-getwd()
+
+# for xaringan presentation options see: 
+# https://slides.yihui.name/xaringan/
+# https://bookdown.org/yihui/rmarkdown/xaringan.html
+
+# to preview:
+# xaringan::inf_mr()
+
+# print to pdf:
+# https://github.com/yihui/xaringan/wiki/Export-Slides-to-PDF
+
+
+# load packages
+libs<-c("copula", "knitr", "kableExtra", "magrittr", "ggplot2", "rstan", "plotly", "bayesplot", "ggExtra", "emo", "widgetframe", "cowplot")
+invisible(lapply(libs, library, character.only = TRUE))
+
+```
+
+
+<!-- outline
+-> interested in clinical trials with multivariate outcomes, 
+many examples of this kind of data
+
+-> motivates scientific and statistical questions about how to analyze data
+
+-> many joint models for multivariate data, focus on one: copulas
+
+-> overview of copula modeling theory and concepts
+
+-> present two applications of copula modeling
+
+-> conclusion and future avenues for research
+-->
+
+<!--
+I'd like to thank ...
+-->
+
+# Introduction
+
+???
+
+The primary focus of my talk is clinical trials with multivariate outcomes. I'll give some background on these outcomes and several approaches that are used to analyze them. 
+
+I'll spend the majority of the presentation describing an alternative modeling framework using functions called copulas and provide details on the benefits of this method and how it's used.
+
+I'll conclude by summarizing the characteristics of the copula framework and discussing avenues for future research.
+
+--
+
+.font160[Clinical Trials with _Multivariate Outcomes_] 
+
+--
+
+.font140[
+.pull-left[
+- Benefit-risk or efficacy-toxicity 
+- Co-primary efficacy endpoints
+]
+]
+
+--
+
+.font140[
+.pull-right[
+- Multiple adverse events
+- Longitudinal or clustered data
+]
+]
+
+<!--
+.font160[Benefit-Risk Example]
+
+.font140[
+- Simulate data from respiratory trial for two interventions
+- Multivariate outcome: continuous efficacy and binary safety data
+]
+-->
+<!--
+- Bayesian framework; posterior probabilities; other advantages
+- mean treatment difference for efficacy and risk difference for safety
+- visual display quantifying probability of technical success; 
+    + Pr(treatment has acceptable efficacy AND acceptable risk) 
+-->
+
+--
+
+.font160[Multiple _interrelated_ outcomes observed within a participant or sampling unit]
+
+
+--
+
+.font160[Compared to performing separate analyses for each outcome, what are the advantages of _joint models_?]
+
+---
+
+# Joint Models: .font70[Advantages]
+
+.font130[
+`r emo::ji("plus")` Answer questions involving _combinations of outcomes_
+
+> "What is the probability that a drug is effective <i>and</i> has a low adverse event rate?"  
+
+> "Is the intervention efficacious for the main endpoint <i>or</i> at least two secondary endpoints?"
+]
+
+--
+
+.font130[
+`r emo::ji("plus")` Answer questions about _dependence_  
+
+> For two drugs with the same average efficacy and safety, the drug with weaker dependence between efficacy and safety is preferred $\Rightarrow$ same benefit at lower risk 
+]
+
+--
+
+.font130[
+`r emo::ji("plus")` Improve inference by _borrowing information_ from related outcomes
+
+> Individual outcome estimates are more efficient if the model accounts for dependence between them
+
+<!--
+See papers by de Leon and Wu; Song et al.
+-->
+]
+
+---
+
+# Joint Models: .font70[Common approaches]
+
+## Multivariate Normal Regression
+
+<!-- aka General linear models or multivariate linear models -->
+<!-- - Multivariate extension of univariate simple or multiple linear regression -->
+
+.font150[
+- Assume multivariate normal distribution to explain dependence between outcomes
+
+`r emo::ji("x")` Limitations: All outcomes must be normal; rigid dependence structure 
+]
+
+--
+
+## Generalized Linear Mixed Models
+
+<!-- `r emo::ji("check")` Accommodates non-normal outcomes -->
+
+.font150[
+- Use random effects to explain dependence between outcomes
+
+`r emo::ji("x")` Limitations: Outcome model parameters have subject-specific, not population-average interpretation; dependence and outcome models not specified separately
+
+]
+
+---
+
+# Joint Models: .font70[Common approaches]
+
+## Generalized Estimating Equations
+
+<!-- (quasi-likelihood) -->
+<!-- `r emo::ji("check")` Accommodates non-normal outcomes -->
+
+.font150[
+- Use a 'working' correlation structure to account for dependence between outcomes without specifying a full distribution
+
+`r emo::ji("x")` Limitations: No multivariate distribution; can't use likelihood-based methods
+]
+
+--
+
+## Factorization Models
+
+.font150[
+- Partition model into conditional and unconditional components 
+<!-- $P(Y_1|Y_2)P(Y_2)$ --> 
+
+`r emo::ji("x")` Limitations: Outcomes treated asymmetrically; hard to extend to higher dimensions
+]
+
+---
+class: center, middle, clear
+
+.font240[
+
+> How can we analyze multivariate clinical trial outcomes jointly while avoiding the limitations of these models?
+
+]
+
+---
+
+# Copula Models
+
+.font140[
+Copula models address many limitations of other common approaches
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Normal or non-normal outcomes 
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Flexible dependence structures 
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Separate specification of outcome and dependence model
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Outcome model parameters maintain interpretation
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Full multivariate distribution
+]
+
+--
+
+.font140[
+> `r emo::ji("check")` Symmetric treatment of outcomes
+]
+
+--
+
+.font140[  
+> `r emo::ji("check")` Extend to higher dimensions
+]
+
+<!--
+So copulas have some benefits over other multivariate models. What are they and how do you use them?
+-->
+
+---
+
+# Copula Models
+
+## Distribution Functions
+
+.font140[
+For random variable $Y_1$:
+
+The _distribution function_ is $F_{1}(y)=Pr(Y_1 \le y)$ for any $y$
+
+  + $F_{1}$ converts values from the data scale to probabilities
+]
+
+--
+
+.font140[
+
+The _quantile function_ is $F_{1}^{-1}(q)=\inf \{y: F_1(y) \ge q\}$ for $0 < q < 1$
+
+  + $F_{1}^{-1}$ converts probabilities back to the data scale
+
+<!--
+Distribution functions define families indexed by one or more parameters
+- Example: Normal distribution family has two parameters, mean $\mu$ and variance $\sigma^2$
+-->
+]
+
+--
+
+.font140[
+
+Use $\gamma_1$ to represent all the parameters of the distribution: $F_1(y;\gamma_1)$
+
+]
+???
+
+Before we define copulas, we need to briefly review some definitions and define notation 
+
+If Y_1 is a random variable representing heights of a population, the distribution function gives the probability of height less than or equal to say, 5.5 feet
+
+The quantile function gives the height associated with a particular quantile, e.g. it answers the question how tall is someone in the 80th percentile?
+
+---
+
+# Copula Models
+
+## Probability Integral Transformation
+
+.font130[
+For _continuous_ random variable $Y_1$:
+
+The probability integral transform converts from the original continuous random variable to a standard uniform random variable, $U$, by applying the distribution function to $Y_1$ itself
+$$F_1(Y_1)=U \sim Unif(0,1)$$
+]
+
+--
+
+.font130[
+
+Applying the quantile function to a standard uniform random variable yields the original random variable
+$$F_1^{-1}(U)=F_1^{-1}(F_1(Y_1))=Y_1$$
+
+]
+
+<!--
+$F_1(y_1)$ can mean 1) $Pr(Y_1 \le y_1)$ for _any_ $y_1$ or 2) The probability integral transform, i.e. transform the observed value $y_1$ of random variable $Y_1$ using the df, $F_1$
+
+difference is whether $y_1$ is arbitrary argument or observed value of the random variable
+-->
+
+---
+
+# Copula Models
+
+## Multivariate Data
+
+.font140[
+Let $Y_j$ be the random variable representing the $j^{th}$ outcome for $j=1,\ldots,d$
+
+- Random variables $Y_1,\ldots,Y_d$ 
+- Observed values of random variables $y_1,\ldots,y_d$ 
+- Distribution functions $F_1,\ldots,F_d$ 
+- Quantile functions $F_1^{-1},\ldots,F_d^{-1}$ 
+]
+
+--
+
+.font140[
+The _multivariate distribution function_ is:
+$$H(y_1,\ldots,y_d)=Pr(Y_1 \le y_1,\ldots,Y_d \le y_d)$$
+]
+
+---
+
+# Copula Models
+
+## Marginal Distributions
+
+.font150[
+For a given multivariate function $H$, the individual $F_j$ can always be recovered:
+- $F_1(y_1)=\lim_\limits{y_2 \to \infty}H(y_1,y_2)$
+- $F_2(y_2)=\lim_\limits{y_1 \to \infty}H(y_1,y_2)$
+- $F_1$ and $F_2$ are called the marginal distributions or _margins_
+]
+
+--
+
+.font150[
+Given the margins $F_1,\ldots,F_d$, can we get the multivariate distribution $H$?
+]
+
+---
+
+# Copula Models
+
+## Sklar's Theorem (1959)
+
+.font140[
+For multivariate distribution $H$ with margins $F_1,\ldots,F_d$, the _copula_ associated with $H$ is a distribution function $C: [0,1]^d \to [0,1]$ with uniform margins that satisfies:
+
+$$H(y_1,\ldots,y_d) = C(F_1(y_1),\ldots, F_d(y_d))\, \text{ for } (y_1,\ldots,y_d) \in \mathbb{R}^d$$
+
+]
+
+--
+
+.font140[
+For continuous margins $F_1,\ldots,F_d$ the unique choice of $C$ is: 
+
+$$H(F_1^{-1}(u_1),\ldots,F_d^{-1}(u_d)) = C(u_1,\ldots, u_d)\, \text{ for } (u_1,\ldots,u_d) \in [0,1]^d$$
+]
+
+--
+
+.font140[
+If $H$ has one or more discrete margins, the copula is <i>not</i> unique
+]
+
+???
+
+Sklar's theorem says the multivariate distribution can be found by first converting the observed values of the marginal random variables to the interval between 0 and 1 (using the probability integral transformation) and then plugging the converted values into the copula function
+
+---
+
+# Copula Models
+
+## Main Ideas from Sklar's Theorem
+
+.font140[
+- Continuous margins $F_1,\ldots,F_d$, and a copula $C$ uniquely define a joint multivariate distribution, $H$
+
+- Margins and copula are specified separately
+
+- Different copulas will produce different multivariate distributions
+
+- Use caution with discrete margins since the copula is not unique
+
+- Copulas are indexed by one or more parameters; use $\theta$ to represent the copula parameters: $C_{\theta}(u_1,\ldots, u_d)$
+]
+
+<!--
+random variables $Y_1$ and $Y_2$ with observed values $y_1,y_2$ and distributions $F_1,F_2$ $\Rightarrow$ copula $C(F_1(y_1),F_2(y_2))$ $\Rightarrow$ multivariate distribution $H(y_1,y_2)$
+-->
+
+---
+
+# Copula Models: .font70[Example 1 (same margins with different copulas)]
+
+.font130[
+$Y_1$ and $Y_2$ are continuous univariate random variables 
+
+- $Y_1$ represents efficacy and has standard normal distribution $F_1$
+
+- $Y_2$ represents adverse event rate and has gamma distribution $F_2$ with mean and variance 4 
+]
+
+--
+
+.font130[
+- Combine $Y_1$ and $Y_2$ with two copulas to see how multivariate distributions differ
+
+  + Gumbel copula $C(u_1, u_2) = \exp[-((-\log u_1)^{\theta}+(-\log u_2)^{\theta})^{1/\theta}]$  with $\theta=1\frac{1}{3}$
+
+  + Clayton copula $C(u_1, u_2) = \max[u_1^{-\theta}+u_2^{-\theta}-1,0]^{-1/\theta}$  with $\theta=\frac{2}{3}$
+
+  + Use the probability integral transformation to get $F_1(y_1)=u_1$ and $F_2(y_2)=u_2$
+
+  + Selected $\theta$ corresponds to Kendall's rank correlation coefficient $\tau=0.25$ for both copulas
+]
+
+<!--
+```{r, eval=FALSE, cache=TRUE, fig.show = 'hold', fig.align='center', out.width='48%', fig.height=5}
+curve(dnorm,-4,4, xlab = bquote(Y[1]~~(normal)), ylab="density", main="Normal")
+
+curve(dgamma(x,4,1),0,10,xlab = bquote(Y[2]~~('gamma')), ylab="density", main="Gamma")
+```
+
+  + Gumbel copula $C(u_1, u_2) = \exp[-((-\log u_1)^{\theta}+(-\log u_2)^{\theta})^{1/\theta}]$ with $\theta=1\frac{1}{3}$
+  
+    + Clayton copula $C(u_1, u_2) = \max[u_1^{-\theta}+u_2^{-\theta}-1,0]^{-1/\theta}$ $\theta=\frac{2}{3}$
+-->
+
+---
+
+# Copula Models: .font70[Example 1 (same margins with different copulas)]
+
+.pull-left[
+.font130[
+Contour plot shows bivariate density with univariate densities along margins  
+
+Marginal probabilities are identical for both models
+
+- $Pr(\text{Efficacy}>0)=0.5$
+
+Joint probabilities depend on copula model
+
+- $Pr(\text{Efficacy}>1 \text{ and } \text{AE rate}>4)$
+  
+  + $0.112$ for Gumbel 
+  + $0.094$ for Clayton
+]
+]
+
+.pull-right[
+```{r ex1-a, cache=TRUE, fig.cap='', fig.show = 'hold', fig.align='center', out.width='71%', fig.height=5.1}
+## Example 1
+
+# set Kendall's tau
+tau <- 0.25
+
+# define Gumbel copula
+gc <- gumbelCopula( iTau(gumbelCopula(),tau) )
+
+# define marginal distributions
+marg <- c("norm", "gamma")
+marg_params <- list(list(mean=0, sd = 1), list(shape=4, rate = 1))
+
+# multivariate distribution combining margins and copula
+mvd_gc <- mvdc(copula = gc, margins = marg, paramMargins = marg_params)
+
+# plotting parameters
+color2 <- rev(rainbow(11, start = 0/6, end = 4/6))
+xl <- c(-4,4)
+yl <- c(-0.5,9)
+
+# set margins 
+f1 <- c(0,0.75,0,0.75)
+f2 <- c(0,0.75,0.45,1)
+f3 <- c(0.6,0.9,0,0.75)
+m1 <- c(5.1,5.1,4.1,2.1)
+m3 <- c(5.1,5.1,4.1,1.1)
+o1 <- c(1,2.5,0,0)
+cx1 <- 1.5
+cx2 <- 1.25
+cx3 <- 2
+
+# Gumbel copula
+op<-par(fig=f1, mar=m1, oma=o1)
+gc_comps <- contour(mvd_gc, dMvdc, xlim=xl, ylim=yl, n.grid=50,
+      xlab=bquote(Y[1]~~(Efficacy)), ylab=bquote(Y[2]~~('AE rate')),
+      col=color2, bty="n", cex.axis=cx2, cex.lab=cx1)
+
+par(fig=f2, new=TRUE)
+curve(dnorm,xl[1],xl[2],xlab="",ylab="", xlim=xl, bty="n", cex.axis=cx2)
+
+par(fig=f3, mar= m3, new=TRUE) 
+x_seq<-seq(0,yl[2],length=100)
+y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
+plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n", cex.axis=cx2)
+title("Gumbel", line = -2.5, outer = TRUE, cex.main=cx3)
+
+# define Clayton copula
+cc <- claytonCopula( iTau(claytonCopula(),tau) )
+
+# multivariate distribution combining margins and copula
+mvd_cc <- mvdc(copula = cc, margins = marg, paramMargins = marg_params)
+
+par(op)
+# Clayton copula
+par(fig=f1, mar=m1, oma=o1)
+cc_comps <-contour(mvd_cc, dMvdc, xlim=xl, ylim=yl, n.grid=50,
+      xlab=bquote(Y[1]~~(Efficacy)), ylab=bquote(Y[2]~~('AE rate')),
+      col=color2, bty="n", cex.axis=cx2, cex.lab=cx1)
+
+par(fig=f2, new=TRUE)
+curve(dnorm,xl[1],xl[2],xlab="",ylab="", xlim=xl, bty="n", cex.axis=cx2)
+
+par(fig=f3, mar=m3, new=TRUE)
+x_seq<-seq(0,yl[2],length=100)
+y_seq<-sapply(x_seq, function(x) dgamma(x,marg_params[[2]]$shape,marg_params[[2]]$rate))
+plot(y_seq,x_seq, type="l",xlab="",ylab="",ylim=yl, bty="n", cex.axis=cx2)
+title("Clayton", line = -2.5, outer = TRUE, cex.main=cx3)
+```
+]
+
+
+---
+
+# Copula Models: .font70[Example 1 (same margins with different copulas)]
+
+```{r ex1-html, out.width='98%', fig.height=7.5}
+# color scheme
+num_col <- 100
+col_sch <- rev(rainbow(num_col, start = 0/6, end = 4/6))
+
+# contours options
+cont_opt <- list(x = list(show=FALSE, usecolormap=FALSE,
+                          project=list(x=TRUE,y=FALSE,z=FALSE)),
+                 y = list(show=FALSE, usecolormap=FALSE,
+                      project=list(x=FALSE,y=TRUE,z=FALSE)) )
+
+#labels and 'camera' angle options
+scene_opt <- list(xaxis = list(title = "Efficacy"), 
+                  yaxis = list(title = "AE rate"),
+                  zaxis = list(title = "density"),
+                 camera = list(eye = list(x = -1.75, y = -1.75, z = 1.25)))
+
+# updatemenus component
+updatemenus <- list(
+  list(
+    active = -1,
+    type= 'buttons',
+    buttons = list(
+      list(
+        label = "Gumbel",
+        method = "update",
+        args = list(list(visible = c(FALSE, TRUE)), list(title = "Gumbel"))),
+      list(
+        label = "Clayton",
+        method = "update",
+        args = list(list(visible = c(TRUE, FALSE)), list(title = "Clayton"))))
+  )
+)
+
+plot_ly(hoverinfo='none') %>% 
+  add_surface(x = gc_comps$x, y = gc_comps$y, z = t(gc_comps$z), opacity = 1,
+              showscale=FALSE, colors = col_sch, contours = cont_opt) %>%
+  add_surface(x = cc_comps$x, y = cc_comps$y, z = t(cc_comps$z), opacity = 1,
+              showscale=FALSE, colors = col_sch, contours = cont_opt, visible=FALSE) %>%
+  layout(scene = scene_opt, title="Clayton", updatemenus = updatemenus)
+
+```
+
+
+???
+
+For me, it's helpful to look at a 3-d plot of the bivariate densities to see how they differ. Volumes under the 3-d surface corresponds to joint probabilities.
+
+Toggling between the two you can see the Gumbel model has more density in the top right quadrant and the Clayton has more density in bottom left quadrant.
+
+Looking from the edges gives some indication of why the individual outcomes are called margins
+
+---
+
+# Copula Models: .font70[Example 2 (same copula with different margins)]
+
+.font120[
+Normal copula:
+
+<!--
+$$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(u_1),\Phi^{-1}(u_2)|\rho)= \int_{-\infty}^{\Phi^{-1}(u_1)} \int_{-\infty}^{\Phi^{-1}(u_2)} \frac{1}{2\pi \sqrt{1-\rho^2}} \exp \bigg[ \frac{-(x^2-2\rho xy + y^2)}{2(1-\rho^2)} \bigg]\, dxdy$$
+-->
+$$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(u_1),\Phi^{-1}(u_2)|\rho)$$
+
+- $\Phi_2$ is the bivariate standard normal distribution function with correlation coefficient $\rho$
+
+- $\Phi^{-1}$ is the standard normal quantile function and $\Phi$ is the standard normal distribution function
+]
+
+--
+
+.font120[
+- If the margins are standard normal, $u_1=\Phi(y_1)$ and $u_2=\Phi(y_2)$, $H$ is bivariate normal:
+$$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(\Phi(y_1)),\Phi^{-1}(\Phi(y_2))|\rho)=\Phi_2(y_1,y_2|\rho)=H(y_1,y_2)$$
+]
+
+--
+
+.font120[
+- If the margins are not standard normal, $H$ is <i>not</i> bivariate normal:
+$$C_{\rho}^{Norm}(u_1,u_2)=\Phi_2(\Phi^{-1}(F_1(y_1)),\Phi^{-1}(F_2(y_2))|\rho)=H(y_1,y_2)$$
+]
+
+--
+
+.font120[
+- Dependence between margins - contained in copula - is identical under both scenarios 
+]
+
+
+---
+
+# Copula Concepts 
+
+.font120[
+
+`r emo::ji("eight_spoked_asterisk")` Copulas can express a wide range of _dependence_
++ The independence copula, $\Pi$ represents _no dependence_
++ The upper bound for copulas is itself a copula, $M$ which represents _perfect positive dependence_ 
++ For $d=2$, the lower bound for copulas is itself a copula, $W$ represents _perfect negative dependence_  
+]
+
+<!--
+The independence copula, $\Pi$ represents _no dependence_ : $\Pi(u_1,\ldots,u_d)=\prod_{j=1}^{d} u_j$
+- $Y_1,\ldots,Y_d$ with copula $C$ are mutually independent if and only if $C = \Pi$
+
+For any $d$ the copula upper bound, $M$ represents _perfect positive dependence_ and for $d=2$ the copula lower bound, $W$ represents _perfect negative dependence_ 
+- For all copulas $W(u_1,\ldots,u_d) \le C(u_1,\ldots,u_d) \le M(u_1,\ldots,u_d)$
+
+$$M(u_1,\ldots,u_d)= \min \{u_1,\ldots,u_d\}$$ 
+$$W(u_1,\ldots,u_d)=\max \{\sum_{j=1}^d u_j -d + 1, 0\}$$ 
+
+`r emo::ji("eight_spoked_asterisk")` A wide range of dependence can be expressed in terms of copulas `r emo::ji("eight_spoked_asterisk")`
+
+-->
+
+--
+
+.font120[
+`r emo::ji("eight_spoked_asterisk")` Copulas are _invariant_ to strictly increasing transformations
+
+<!--
+For $(Y_1,\ldots,Y_d) \sim H$ with continuous margins $F_1,\ldots,F_d$ and copula $C$ if $T_1,\ldots, T_d$ are strictly increasing _transformations_ then 
+$T_1(Y_1),\ldots,T_d(Y_d)$ also has copula $C$
+-->
+
+The copula measuring dependence between $Y_1$ and $Y_2$ is identical to the copula measuring dependence between: $\log(Y_1)$ and $\log(Y_2)$; $Y_1$ and $\sqrt Y_2$; etc.
+
+]
+
+<!--
+
+
+.font130[
+Example: The copula measuring dependence between $Y_1$ and $Y_2$ is same the same as copula measuring dependence between:  
+.pull-left[
+- $\log(Y_1)$ and $\log(Y_2)$ 
+- $\log(Y_1)$ and $Y_2$ 
+]
+.pull-right[
+- $Y_1$ and $\sqrt Y_2$
+- etc.
+]
+]
+
+.center[
+.font140[
+`r emo::ji("eight_spoked_asterisk")`<i>&#x202F;</i>Copulas are unaffected by measurement scale or strictly increasing transformations `r emo::ji("eight_spoked_asterisk")`
+]
+]
+
+-->
+
+--
+
+.font120[
+`r emo::ji("eight_spoked_asterisk")` Other dependence properties
+
+Many well known _measures of association_ such as Spearman's $\rho$ and Kendall's $\tau$ can be expressed as functions of the copula alone, they also describe more complex dependence relationships such as _symmetry_ and _tail dependence_
+
+<!--
+- Spearman's $\rho = 12 \iint_{[0,1]^2} [C(u_1,u_2) - \Pi(u_1,u_2)]\, du_1du_2$
+- Kendall's $\tau = 4 \iint_{[0,1]^2}C(u_1, u_2)\, dC(u_1, u_2) -1$
+
+Pearson's correlation coefficent cannot be expressed in terms of copula alone 
+It has several drawbacks as general measure of association (only measures linear dependence, does not exist for every random vector $(Y_1, Y_2)$, not invariant to increasing transformations)-->
+
+]
+
+<!--
+
+.center[
+.font150[
+`r emo::ji("eight_spoked_asterisk")` Understanding dependence properties helps guide choice of copula models `r emo::ji("eight_spoked_asterisk")`
+]
+]
+
+-->
+
+
+---
+
+# Inference for Copula Models
+
+.font140[
+Collect $n$ multivariate observations $(y_{i1},\ldots,y_{id}),$ $i=1,\ldots,n$ and infer the marginal and copula parameter estimates or posterior distributions. For continuous margins:
+
+- Copula density is $\color{blue}{c_{\theta}(u_1,\ldots,u_d)}=\frac{\partial^d C_{\theta}(u_1,\ldots,u_d)}{\partial u_1 \cdots \partial u_d}$
+
+- Marginal density is $\color{red}{f_j(y_j;\gamma_j)}=\frac{d}{dy_j}F_j(y_j;\gamma_j)$
+]
+
+<!--
+- _Multivariate density_ $h(y_1,\ldots,y_d)= c_{\theta}(F_1(y_1;\gamma_1),\ldots,F_d(y_d;\gamma_d)) \times \prod_{j=1}^{d} f_j(y_j;\gamma_j)$
+-->
+
+--
+
+.font140[
+The _log-likelihood_ for all $n$ observations is:
+
+$$\ell(\gamma_1,\ldots,\gamma_d,\theta)=\sum_{i=1}^{n}\{\log \color{blue}{c_{\theta}(F_1(y_{i1};\gamma_1),\ldots,F_d(y_{id};\gamma_d))} + \sum_{j=1}^d \log \color{red}{f_j(y_{ij};\gamma_j)} \}$$
+]
+
+---
+
+# Inference for Copula Models
+
+## Frequentist
+
+.font140[
+_Maximize log-likelihood_ with respect to parameters to get estimates $(\hat{\gamma}_1,\ldots,\hat{\gamma}_d,\hat{\theta})$
+
+Use asymptotic approximation or bootstrap to obtain standard errors
+]
+
+--
+
+## Bayesian
+
+.font140[
+Use Bayes' theorem to combine the _likelihood_ with _priors_ for marginal and copula parameters and get the _posterior distribution_ of parameters given data and priors
+
+Will often need to use Markov Chain Monte Carlo (MCMC) to sample from posterior distribution
+]
+
+---
+
+# Copula Regression
+
+.font140[
+Extend basic theory to include _covariates_ for groups being compared (treatments, dose levels, etc.)
+
+Marginal regression function
+
+- Relate observed vector $x_j$ of $p_j$ covariates to marginal parameter(s) $\gamma_j$
+- Example: $\gamma_{j,x_j}=\beta_{j0} + \sum_{k=1}^{p_j} x_{jk} \beta_{jk}$
+
+<!-- - Marginal regression model $F_j(y_j;\varphi_j(x_j))$ -->
+]
+
+--
+
+.font140[
+Copula regression function
+
+- Relate observed vector of covariates to copula parameter(s) $\theta$
+- Example: $\theta_{x}=\omega_{0}+ \sum_{k=1}^{p} x_{k} \omega_{k}$
+]
+
+<!--
+
+.font120[
+$\gamma_{j,x_j}=\varphi(x_j)=E[Y_j|x_j]=\beta_{j0}+ \sum_{k=1}^{p_j} \beta_{jk} x_{jk}$
+$\theta_{x}=\zeta(x)=\alpha_{0}+ \sum_{k=1}^{p} \alpha_{k} x_{k}$
+Log-likelihood for continuous margins including both regression models is:
+$$\ell(\beta_1,\ldots,\beta_d,\alpha) =\sum_{i=1}^{n}\{\log c_{\zeta(x)}(F_1(y_{i1};varphi_1(x_1)),\ldots,F_d(y_{id};\varphi_d(x_d))) + \sum_{j=1}^d \log f_j(y_{ij};\varphi_j(x_j))\}$$
+]
+
+-->
+
+---
+
+# Copula Regression
+
+.font140[
+Marginal regression functions are _the same_ as if performing separate analyses
+]
+
+--
+
+.font140[
+There are multiple strategies for estimating the copula regression model using parametric, semi-parametric, or non-parametric approaches
+]
+
+--
+
+.font140[
+As with all statistical models it is important to _check assumptions_ and goodness-of-fit
+]
+
+--
+
+.font140[
+Copula regression is often a _generalization_ of other joint modeling approaches
+- A normal copula with normal margins is the same as multivariate normal regression
+
+- The generalized linear mixed model is a special case of a copula regression model which uses a normal copula to link the random effects
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Setting
+.font140[
+Respiratory clinical trial comparing placebo to new active drug
+
+Efficacy outcome is change from baseline lung function
+
+Safety outcome is occurrence of adverse event (yes/no)
+]
+--
+.font140[
+Main Goal: Assess the evidence that the drug is _effective and safe_ across a range of clinically meaningful values, e.g.
+
+> Comparing the active drug to placebo, what are the posterior probabilities associated with differences in lung function change from baseline between 70 and 130 points <i>and</i> differences in the proportion of adverse events between 0 and 0.5?
+
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Simulation
+
+.font130[
+- Two-arm parallel design with sample size $n=200$ for subjects $i=1,\ldots,n$
+- 1:1 randomization to placebo $(t=1)$ or active drug $(t=2)$ denoted by vector of binary treatment indicators $x_i =(x_{i1},x_{i2})$ 
+
+- Bivariate response for subject $i$ is $y_i=(y_{i1},y_{i2})$:
+  + $y_{i1}$ is continuous efficacy outcome, assumed to be normal with mean $\mu_t$ and variance $\sigma_t^2$ 
+  + $y_{i2}$ is binary adverse event outcome, assumed to be Bernoulli with parameter $p_t$
+
+- Linear regression used for efficacy outcome, probit regression used for safety outcome
+
+- Normal copula used to couple marginal outcome models together 
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Model
+
+.font120[
+\begin{eqnarray*}
+\text{Efficacy model:} & \;\;& y_{i1} \sim Normal(\mu_{t},\sigma_{t}) \;\; \mu_{t} = x_{i1}\color{RoyalBlue}{\beta_{11}} + x_{i2}\color{RoyalBlue}{\beta_{12}} \;\; \sigma_{t} = x_{i1}\color{red}{s_1} + x_{i2}\color{red}{s_2}\\
+\\
+\text{Safety model:} & \;\;& y_{i2} \sim Bernoulli(p_{t}) \;\; \Phi^{-1}(p_i) = x_{i1}\color{RoyalBlue}{\beta_{21}} + x_{i2}\color{RoyalBlue}{\beta_{22}}\\
+\\
+\text{Dependence model:} & \;\; & H_{\theta_{t}}(y_{i1},y_{i2})=C_{\theta_{t}}^{Norm}(F_1(y_{i1};\mu_{t},\sigma_{t}),F_2(y_{i2};p_{t})) \;\;
+\color{orange}{\theta_{t}} = x_{i1}\color{LimeGreen}{\omega_{1}} + x_{i2} \color{LimeGreen}{\omega_{2}}
+\end{eqnarray*}
+]
+.font110[
+for treatment $t$:
+- $\color{RoyalBlue}{\beta_{jt}}$ are effect parameters for marginal models
+- $\color{red}{s_t}$ are dispersion parameters for the efficacy model
+- $\color{LimeGreen}{\omega_t}$ are copula dependency parameters
+- $\color{orange}{\theta_t}$ is the poly-serial correlation between the normal efficacy outcome and the latent normal distribution for the binary safety outcome; relates to Pearson correlation between normal and binary outcome: $\rho_t = Corr(y_{i1},y_{i2}) = \theta_t \phi[\Phi^{-1}(p_t)]/\sqrt{p_t(1-p_t)}$
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Simulated Data
+
+.left-column[
+.font100[
+Placebo group
+- Change in lung function: mean $\mu_1=-150$ and variance $\sigma_1^2=100^2$ 
+- Adverse event rate: $p_1=0.1$
+- Correlation between outcomes: $\rho_1=0.1$
+
+Active group 
+- Change in lung function: mean $\mu_2=-50$ and variance $\sigma_2^2=100^2$ 
+- Adverse event rate: $p_2=0.4$
+- Correlation between outcomes: $\rho_2=0.6$
+]
+]
+```{r br-a, cache=TRUE}
+## Benefit-Risk application 
+
+# Simulate data
+set.seed(4283)
+
+# function to get copula parameter given rho and p; see Costa section 3.1.2
+getTheta <- function(rho,p){  (rho*sqrt(p*(1-p))) / dnorm(qnorm(p)) }
+
+# number of samples per arm
+n<-100
+
+# placebo group
+mu_1 <- -150
+sigma2_1 <- 100^2
+p_1 <- 0.1  
+rho_1 <- 0.1
+
+# normal copula
+nc_p<-normalCopula( getTheta(rho=rho_1, p=p_1)  )
+
+pbo_dist <- mvdc(nc_p, margins = c("norm","binom"),
+                paramMargins = list(list(mean = mu_1, sd = sqrt(sigma2_1)), 
+                                    list(size = 1, prob = p_1)) )
+
+pbo_samps<-rMvdc(n, pbo_dist)
+
+if (0){ # check simulated values
+mean(pbo_samps[,1]) # mu_1
+sd(pbo_samps[,1]) # sigma_1
+mean(pbo_samps[,2]) #p_1
+cor(pbo_samps[,1],pbo_samps[,2]) # rho_1 (Pearson corr)
+}
+
+# treatment
+mu_2 <- -50
+sigma2_2 <- 100^2
+p_2 <- 0.4
+rho_2 <- 0.6
+
+# normal copula
+nc_t<-normalCopula( getTheta(rho=rho_2, p=p_2)  )
+
+trt_dist <- mvdc(nc_t, margins = c("norm","binom"),
+                paramMargins = list(list(mean = mu_2, sd = sqrt(sigma2_2)), 
+                                    list(size = 1, prob = p_2)) )
+
+trt_samps<-rMvdc(n, trt_dist)
+
+if (0){ # check simulated values
+mean(trt_samps[,1]) # mu_2
+sd(trt_samps[,1]) # sigma_2
+mean(trt_samps[,2]) #p_2
+cor(trt_samps[,1],trt_samps[,2]) # rho_2 (Pearson corr)
+}
+
+#combine placebo and treatment data
+dat <- rbind(pbo_samps,trt_samps) %>% cbind(sort(rep(c(0,1),n)),
+                                            sort(rep(c(0,1),n),decreasing=TRUE),
+                                            sort(rep(c(0,1),n))) %>% as.data.frame() 
+names(dat) <- c("efficacy","safety","treatment","trt1","trt2")
+
+dat_lab <- dat
+dat_lab %<>% mutate(treatment=factor(treatment, labels=c("placebo","active")),
+                   safety=factor(safety, labels=c("no AE","AE")))
+```
+
+--
+
+.right-column[
+```{r br-b, cache=TRUE, fig.show = 'hold', fig.align='center', fig.height=6}
+ggplot(dat_lab, aes(x=efficacy, fill=treatment)) + 
+  geom_histogram(bins=20, alpha=0.75) + 
+  facet_grid(treatment~safety) +
+  xlab("Change in lung function") +
+  theme_bw(base_size=21)
+```
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Bayesian Inference
+
+.left-column[
+Priors
+- $\beta \sim N(\mu=0,\sigma=1000)$
+- $\sigma \sim InvGamma(\alpha=0.001,\eta=0.001)$
+- $\theta \sim Unif(-1, 1)$  
+
+.font110[
+MCMC used to draw 8000 posterior samples
+
+Good performance for efficacy model 
+
+Moderate performance for dependence model
+
+Worst performance for safety model
+]
+]
+
+.right-column[
+```{r, cache=TRUE, fig.show = 'hold', fig.align='center', fig.height=6.5, message=FALSE}
+pres_dir <- getwd() 
+load(file.path(dirname(pres_dir),"paper","br_mod_out.RData"))
+
+br_posterior2 <- extract(br_fit, inc_warmup = FALSE, permuted = FALSE)
+
+p1 <- mcmc_intervals(br_posterior2, pars = c("mu[1]", "mu[2]", "s[1]", "s[2]"),
+           prob = 0.90, prob_outer = 0.99, point_est = "median")
+p1_new <- p1 + geom_point(aes(x=c(-150,-50, 100, 100),y=c(1,2,3,4)), color="red", size=3) +
+  scale_y_discrete(labels=c("mu[1]" = expression(mu[1]), "mu[2]" = expression(mu[2]),
+                            "s[1]" = expression(sigma[1]), "s[2]"=expression(sigma[2]))) +
+  geom_point(aes(x=-190, y=4.2), color="red", size = 3) +
+  geom_point(aes(x=-190, y=3.8), color="#03396c",fill="#d1e1ec", size = 4, shape = 21) +
+  geom_segment(aes(x=-194,xend=-185, y=3.4, yend=3.4), color="#03396c",size=2) +
+  geom_segment(aes(x=-194,xend=-185, y=3.0, yend=3.0), color="#6497b1") +
+  geom_text(aes(x=-170, y=4.2, hjust=0, label="true value"), size=5)+
+  geom_text(aes(x=-170, y=3.8, hjust=0, label="posterior median"), size=5)+
+  geom_text(aes(x=-170, y=3.4, hjust=0, label="posterior 90% interval"), size=5)+
+  geom_text(aes(x=-170, y=3.0, hjust=0, label="posterior 99% interval"), size=5)+
+  theme(axis.text.x = element_text(size=20),axis.text.y = element_text(size=20)) 
+
+p2 <- mcmc_intervals(br_posterior2, pars = c("rho[1]", "rho[2]"),
+           prob = 0.90, prob_outer = 0.99, point_est = "median")
+p2_new <- p2 + geom_point(aes(x=c(0.1,0.6),y=c(1,2)), color="red", size=3) +
+  scale_y_discrete(labels=c("rho[1]" = expression(rho[1]), "rho[2]"=expression(rho[2]))) +
+  theme(axis.text.x = element_text(size=20),axis.text.y = element_text(size=20))
+
+p3 <- mcmc_intervals(br_posterior2, pars = c("p[1]", "p[2]"),
+           prob = 0.90, prob_outer = 0.99, point_est = "median")
+p3_new <- p3 + geom_point(aes(x=c(0.1,0.4),y=c(1,2)), color="red", size=3) +
+  scale_y_discrete(labels=c("p[1]" = expression(p[1]), "p[2]" = expression(p[2]))) +
+  theme(axis.text.x = element_text(size=20),axis.text.y = element_text(size=20))
+
+plot_grid(p1_new, p2_new, p3_new, ncol=1, rel_heights=c(2,1,1))
+
+
+if (0){
+# old
+  p2 <- mcmc_intervals(br_posterior2, pars = c("p[1]", "p[2]", "rho[1]", "rho[2]"),
+           prob = 0.90, prob_outer = 0.99, point_est = "median")
+p2 + geom_point(aes(x=c(0.1,0.4,0.1,0.6),y=c(1,2,3,4)), color="red", size=3) +
+  scale_y_discrete(labels=c("p[1]" = expression(p[1]), "p[2]" = expression(p[2]),
+                            "rho[1]" = expression(rho[1]), "rho[2]"=expression(rho[2]))) +
+  theme(text = element_text(size=30))
+  
+  
+rownames(br_tab)<- c('$\\mu_1$','$\\mu_2$',"$p_1$","$p_2$","$\\rho_1$","$\\rho_2$","$\\theta_1$","$\\theta_2$")
+knitr::kable(br_tab, format="html", escape=TRUE,
+      caption = 'Benefit-Risk Copula Model Posterior Summary',
+      col.names = c("Mean", "MCSE Mean", "SD", "2.5%", "25%",
+                    "50%", "75%", "97.5%", "eff. num. samps", "Rhat")) 
+}
+
+```
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Results
+
+.pull-left[
+.font140[
+Plot treatment difference for efficacy $(\mu_2-\mu_1)$ against safety $(p_2-p_1)$ for normal copula and independence model 
+
+Marginal histograms nearly identical
+
+Normal copula recovers the positive dependence between efficacy and safety treatment differences
+]
+]
+
+.pull-right[
+```{r br-f, cache=TRUE, echo=FALSE, fig.show = 'hold', fig.align='center', fig.height = 3.25, fig.width = 4.5}
+# scatterplot with histogram margins
+pp <- ggplot(diffs,aes(x=mu_diff,y=p_diff)) +  
+  geom_point(color="#23373B", alpha=0.15)  + 
+  xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + 
+  ylab(bquote(p[2]-p[1] ~ "(safety)")) +
+  labs(title="Normal copula")+theme(text = element_text(size=20)) 
+ 
+#  geom_hline(aes(yintercept=0.3, color="#EB811B"), size=1, linetype="dashed", show.legend = FALSE) +
+#  geom_vline(aes(xintercept=100, color="#EB811B"), size=1, linetype="dashed",  show.legend = FALSE) +
+
+#+ geom_density2d()
+
+pp_marg <-ggMarginal(pp, type="histogram", fill = "white", 
+           xparams = list(bins=25), yparams = list(bins=25))
+
+pp_marg 
+```
+
+```{r br-f-ind, cache=TRUE, echo=FALSE, fig.show = 'hold', fig.align='center', fig.height = 3.25, fig.width = 4.5}
+pp0 <- ggplot(diffs0,aes(x=mu_diff,y=p_diff)) + 
+  geom_point(color="#23373B", alpha=0.15) +
+  xlab(bquote(mu[2]-mu[1] ~ "(efficacy)")) + 
+  ylab(bquote(p[2]-p[1] ~ "(safety)")) +
+  labs(title="Independence")+theme(text = element_text(size=20)) 
+
+#  geom_hline(aes(yintercept=0.3, color="#EB811B"), size=1, linetype="dashed", show.legend = FALSE) +
+#  geom_vline(aes(xintercept=100, color="#EB811B"), size=1, linetype="dashed",  show.legend = FALSE) +
+
+#  + geom_density2d()
+
+pp_marg0 <- ggMarginal(pp0, type="histogram", fill = "white", 
+           xparams = list(bins=25), yparams = list(bins=25))
+
+pp_marg0
+```
+]
+
+---
+
+# Benefit-Risk Analysis (Costa and Drury 2018)
+
+## Results
+
+.pull-left[
+.font120[
+Probability of Technical Success (POTS) 
+- Posterior probability of efficacy greater than threshold $\Delta_E$ and AE risk difference less than threshold $\Delta_S$
+- $Pr(\mu_2-\mu_1 \ge \Delta_E \text{ and } p_2-p_1 \le \Delta_S)$
+
+All pairs along a contour have same POTS
+
+Low POTS for efficacy improvement over 110 and AE risk difference less than 0.1
+
+High POTS for efficacy improvement over 70 and AE risk difference less than 0.5
+]
+]
+
+```{r br-potus, cache=TRUE}
+# probability of technical success
+potus <- function(delta_e, delta_p, dat=diffs){
+  
+  potus0 <- function(delta_e, delta_p, dat){
+    mean(dat$mu_diff>=delta_e & dat$p_diff<=delta_p)*100
+  }
+  
+  #vectorize
+  mapply(function(x,y) potus0(x,y,dat), delta_e, delta_p)
+}
+
+de<-seq(70,130,length=50)
+ds<-seq(0,0.5,length=50)
+pp<-outer(de,ds,potus)
+pp0<-outer(de,ds,potus,dat=diffs0)
+
+# color scheme
+num_cols<-20
+potus_col <- rev(rainbow(20, start = 0/6, end = 4/6))
+```
+
+<!-- Note: axis titles only render correctly on linux -->
+.pull-right[
+```{r br-potus-html , cache=TRUE}
+# https://github.com/yihui/xaringan/issues/98
+l <- plot_ly(x=de, y=ds, z=t(pp), type = "contour", colors=potus_col, 
+        contours = list(coloring = 'heatmap', showlabels = TRUE),
+        hoverinfo = 'z') %>%
+  layout(xaxis=list(title ="Δ<sub>E</sub>"), yaxis=list(title = "Δ<sub>S</sub>"),
+         title="Probability of Technical Success")
+
+frameWidget(l, width='100%', height='100%') 
+```
+]
+
+---
+
+# Discussion
+
+.font140[
+Copula models can be applied in any clinical trial involving _multiple interrelated_ outcomes
+]
+
+--
+
+.font140[
+- Facilitate questions involving _combinations of outcomes_ or _dependence_
+- Improve inference by _borrowing information_ from correlated outcomes
+]
+--
+.font140[
+- Overcome limitations of other joint modeling approaches
+> `r emo::ji("check")` Flexible, transformation-invariant dependence structures   
+> `r emo::ji("check")` Separate specification of marginal and dependence model  
+> `r emo::ji("check")` Parameters maintain marginal model interpretation   
+> `r emo::ji("check")` Full multivariate distribution  
+> `r emo::ji("check")` Symmetric treatment of outcomes   
+> `r emo::ji("check")` Normal or non-normal outcomes and extension to higher dimensions
+]
+
+---
+
+# Copula Research Topics
+
+.font120[
+There are several specific research topics, especially in Bayesian copula regression modeling, that would provide a valuable contribution to the clinical trial literature 
+
+- Systematic comparison to other benefit-risk approaches or as an alternative for composite outcomes
+
+- Development of general-purpose, user-friendly software for Bayesian copula regression modeling
+
+- Study design for confirmatory clinical trials using Bayesian copula analysis
+  + Bayesian power and false-positive rate 
+  + Sample size estimation
+
+- Analysis of sparse high-dimensional data, e.g. adverse events from a phase IV trial
+
+- Guidelines for incorporating prior information from historic controls, heterogeneous populations, biosimilar products, etc.
+]
+
+---
+class: center, middle, clear
+
+.font240[
+> Copulas are a unique, underutilized tool for the study of multivariate data that avoid the limitations of other joint modeling approaches
+]
+
+---
+
+# Acknowledgements
+
+.font130[
+Committee:
+> Dr. Frank Harrell, Advisor
+
+> Dr. Leena Choi, Chair
+
+> Dr. Chang Yu
+
+> Dr. Kristin Archer Swygert
+
+> Dr. Wesley Self
+]
+
+.font100[
+This project was supported in part by an appointment to the Research Participation Program in the Office of Biostatistics, Center for Drug Evaluation and Research, U.S. Food and Drug Administration, administered by the Oak Ridge Institute for Science and Education through an interagency agreement between the U.S. Department of Energy and FDA.
+]
+
+
+---
+
+# Supplement
+
+## Copula Families
+
+Different families have different methods of construction, symmetry, tail dependence
+
+```{r, fig.align='center', fig.height=6, fig.width=7.5}
+
+# set Kendall's tau
+tau <- 0.25
+
+# Independence copula
+ic <- indepCopula()
+
+# Normal copula
+nc <- normalCopula( iTau(normalCopula(),tau)  )
+
+# Student-t copula w/ 4 df
+tc <- tCopula( iTau(tCopula(),tau) )
+
+# define Gumbel copula
+gc <- gumbelCopula( iTau(gumbelCopula(),tau) )
+
+# define Clayton copula
+cc <- claytonCopula( iTau(claytonCopula(),tau) )
+
+# define Frank copula
+fc <- frankCopula( iTau(frankCopula(),tau) )
+
+# define marginal distributions
+marg1 <- c("norm", "norm")
+marg_params1 <- list(list(mean=0, sd = 1), list(mean=0, sd = 1))
+
+# multivariate distribution combining margins and copula
+mvd_ic <- mvdc(copula = ic, margins = marg1, paramMargins = marg_params1)
+mvd_nc <- mvdc(copula = nc, margins = marg1, paramMargins = marg_params1)
+mvd_tc <- mvdc(copula = tc, margins = marg1, paramMargins = marg_params1)
+
+mvd_gc <- mvdc(copula = gc, margins = marg1, paramMargins = marg_params1)
+mvd_cc <- mvdc(copula = cc, margins = marg1, paramMargins = marg_params1)
+mvd_fc <- mvdc(copula = fc, margins = marg1, paramMargins = marg_params1)
+
+lb<- -2.5
+ub<- 2.5
+
+op<-par(mfrow=c(2,3))
+contour(mvd_ic,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub),xlab="",ylab="",main="Independence", cex.axis=cx2, cex.main=cx3 ,col=color2)
+contour(mvd_nc,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub),xlab="",ylab="",main="Normal", cex.axis=cx2, cex.main=cx3,col=color2)
+contour(mvd_tc,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub), xlab="",ylab="",main=expression(bold(Student-t[4])), cex.axis=cx2, cex.main=cx3,col=color2)
+
+contour(mvd_gc,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub),xlab="",ylab="",main="Gumbel", cex.axis=cx2, cex.main=cx3,col=color2)
+contour(mvd_cc,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub),xlab="",ylab="",main="Clayton", cex.axis=cx2, cex.main=cx3,col=color2)
+contour(mvd_fc,dMvdc,xlim = c(lb, ub), ylim=c(lb, ub),xlab="",ylab="",main="Frank", cex.axis=cx2, cex.main=cx3,col=color2)
+par(op)
+```
+
+
+
+
+---
+
+# Supplement
+
+## Active Areas of Research
+
+.font130[
+Vine copulas - multivariate dependence structures for $>$ 2 dimensions by representing $d$-dimensional copula in terms of bivariate copulas
+- Example: Large number of adverse events or longitudinal data for many time points
+]
+
+--
+
+.font130[
+Multivariate survival data - models for multiple time-to-event outcomes accounting for censoring  
+- Example: Time to death from CV causes and time to hospitalization for heart failure
+]
+
+--
+
+.font130[
+Joint longitudinal/survival data - combined analysis of repeated outcomes over time and time-to-event outcomes 
+- Account for within-subject dependence, missingness/dropout, and censoring
+- Example: Disease-free survival time and repeated measures of disease biomarker 
+]
+
