@@ -4,6 +4,25 @@ em {
   color: #EB811B;
 }
 
+.font210 {
+  font-size: 210%;
+}
+
+.font220 {
+  font-size: 220%;
+}
+
+.font230 {
+  font-size: 230%;
+}
+
+.font240 {
+  font-size: 240%;
+}
+
+.font250 {
+  font-size: 250%;
+}
 
 .pull-left {
   float: left;

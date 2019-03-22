@@ -1,7 +1,11 @@
 
+/pres/libs
 
+/paper/*.RData
+/paper/.Rhistory
 /paper/output
 /paper/_bookdown_files
+/paper/zotero_library.bib
 
 ## bib and csl file
 *.bib
@@ -254,3 +258,21 @@ TSWLatexianTemp*
 # generated if using elsarticle.cls
 *.spl
 .Rproj.user
+
+pres/orals_pres_xaringan_cache/
+
+pres/orals_pres_xaringan_files/
+
+pres/pres\.Rproj
+
+20190211_cop_mod_annot\.pdf
+
+20190212_cop_mod\.pdf
+
+20190220_cop_model_pres_rot\.pdf
+
+20190220_cop_model_pres\.pdf
+
+pres/notation/orals_notation\.pdf
+
+pres_print_to_pdf\.txt
