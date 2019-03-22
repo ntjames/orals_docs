@@ -21,17 +21,61 @@
 \section*{Copula Modeling for Clinical Trials Notation}
 
 % widths of both columns should add up to 7.25in
-\begin{tabular}{p{1in}p{6.25in}}
-	$d$ & number of outcomes \\
+\begin{tabular}{p{1.5in}p{6in}}
+	$d$ & Number of outcomes of interest \\
+	\\
 	$Y_j$ & Random variable for outcome $j=1,\ldots,d$\\
-	$y_j$ & observed \\
-	$F_j$ & Distribution function (df) of random variable $Y_j$ \\
-	$F_j^{-1}$ & Inverse distribution or quantile function \\
+	$y_j$ & Observed value of random variable $Y_j$\\
+	$F_j(y_j)$ & Distribution function of random variable $Y_j$ $\rightarrow$ Converts from data to probabilities \\
+	$F_j^{-1}(q)$ & Quantile function of random variable $Y_j$ $\rightarrow$ Converts from probabilities to data\\
+	$\gamma_j$ & Parameters for distribution function $F_j$\\
+	\\
+	Probability \mbox{integral transform} & $F_1(Y_1) = U \sim Unif(0,1)$ $\rightarrow$ Convert between $Y_1$ and uniform random variable $U$ \\
+	\\
 	$H(y_1,\ldots,y_d)$ & Multivariate distribution function \\
 	$C(u_1,\ldots,u_d)$ & Copula (distribution) function\\
-	$N(\mu, \sum)$ & multivariate Gaussian (normal) distribution with mean vector $\mu$ and covariance matrix $\sum$ and also $f(x)=\frac{1}{\sqrt{1-\theta}}$\\
-	$M_n$ & maximum of $X_1$, $X_2$, \ldots, $X_n$ \\
-	$I_A$ & indicator function of the set $A$\\
+	$\theta$ & Parameters for copula $C$\\
+	$\tau$ & Kendall's rank correlation coefficient\\
+	\\
+	Gumbel copula & $C(u_1,u_2)=\exp[-((-\log u_1)^{\theta}+(-\log u_2)^{\theta} )^{1/\theta}]$ \\
+	Clayton copula & $C(u_1,u_2)=\max[u_1^{-\theta} + u_2^{-\theta}-1,0]^{-1/\theta}$ \\	
+	Normal copula &$C(u_1,u_2)=\Phi_2(\Phi^{-1}(u_1),\Phi^{-1}(u_2)|\rho)$\\	
+	$\Phi_2(\cdot,\cdot|\rho)$ & Bivariate standard normal distribution function with correlation coefficient $\rho$\\
+	$\Phi$ & Standard normal distribution function\\
+	$\Phi^{-1}$ & Standard normal quantile function\\
+	Independence \mbox{copula} & $\Pi(u_1,\ldots,u_d)=\prod_{j=1}^{d} u_j$\\
+	Copula \mbox{lower bound} & $M(u_1,\ldots,u_d)= \min \{u_1,\ldots,u_d\}$ \\
+	Copula \mbox{upper bound} & $W(u_1,\ldots,u_d)=\max \{\sum_{j=1}^d u_j -d + 1, 0\}$ \\
+	\\
+	$c(u_1,\ldots,u_d)$& copula density\\
+	$f_j(y_j)$& marginal density\\
+	\mbox{Log-likelihood with} \mbox{continuous margins} & $\ell(\gamma_1,\ldots,\gamma_d,\theta)=\sum_{i=1}^{n}\{\log c_{\theta}(F_1(y_{i1};\gamma_1),\ldots,F_d(y_{id};\gamma_d)) + \sum_{j=1}^d \log f_j(y_{ij};\gamma_j) \}$
+\end{tabular}
+
+\section*{Benefit-Risk Analysis (Costa and Drury 2018) Notation}
+
+\begin{tabular}{p{1.5in}p{6in}}
+	$n$ & Total sample size\\
+	$i$ & Index for $i^{th}$ subject\\
+	$t$ & Placebo ($t=1$) or active ($t=2$) intervention group\\
+	\\
+	$x_i=(x_{i1},x_{i2})$ & Treatment indicator vector for subject $i$; $x_{it}=1$ for treatment $t$, 0 otherwise\\
+	$y_i=(y_{i1},y_{i2})$ & Bivariate response for subject $i$\\
+	$y_{i1}$ & Continuous efficacy outcome, assumed to be normal with mean $\mu_t$ and variance $\sigma_t^2$\\
+	$y_{i2}$ & Binary adverse event outcome, assumed to be Bernoulli with parameter $p_t$\\
+	\\
+	Efficacy model & $y_{i1} \sim Normal(\mu_{t},\sigma_{t}) \quad \mu_{t} = x_{i1}\beta_{11} + x_{i2}\beta_{12} \quad \sigma_{t} = x_{i1}s_1 + x_{i2}s_2$\\
+	Safety model & $y_{i2} \sim Bernoulli(p_{t}) \quad \Phi^{-1}(p_i) = x_{i1}\beta_{21} + x_{i2}\beta_{22}$
+	\\
+	Dependence model  & $H_{\theta_{t}}(y_{i1},y_{i2})=C_{\theta_{t}}^{Norm}(F_1(y_{i1};\mu_{t},\sigma_{t}),F_2(y_{i2};p_{t})) \quad
+	\theta_{t} = x_{i1}\omega_{1} + x_{i2} \omega_{2}$\\
+	\\
+	$\beta_{jt}$ & Effect parameters for marginal models\\\
+	$s_t$ & Dispersion parameters for efficacy model\\
+	$\omega_t$ & Copula dependency parameters\\
+	$\theta_t$ & Poly-serial correlation between the normal efficacy outcome and the latent normal distribution underlying the binary safety outcome\\ 
+	$\rho_t = \theta_t \cdot \frac{\phi[\Phi^{-1}(p_t)]}{\sqrt{p_t(1-p_t)}}$ &
+	Pearson correlation between normal efficacy outcome and binary safety outcome
 \end{tabular}
 
 \end{document} 
